@@ -3,6 +3,7 @@ package org.duelengine.merge;
 import java.io.*;
 import java.security.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class MergeBuilder {
 
@@ -27,25 +28,26 @@ public class MergeBuilder {
 			return;
 		}
 
-		MergeBuilder compiler = new MergeBuilder();
-		compiler.setInputFolder(args[0]);
+		MergeBuilder builder = new MergeBuilder();
+		builder.setInputFolder(args[0]);
 
 		if (args.length > 1) {
-			compiler.setOutputClientFolder(args[1]);
+			builder.setOutputClientFolder(args[1]);
 
 			if (args.length > 2) {
-				compiler.setOutputResourceFile(args[2]);
+				builder.setOutputResourceFile(args[2]);
 			}
 		}
 
 		try {
-			compiler.execute();
+			builder.execute();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(System.err);
 		}
 	}
 
+	private final Logger log = Logger.getLogger(MergeBuilder.class.getCanonicalName());
 	private final Map<String, Compactor> compactors;
 	private final Map<String, PlaceholderGenerator> placeholders;
 	private File inputFolder;
@@ -157,15 +159,15 @@ public class MergeBuilder {
 	private void buildMerge(final Map<String, String> hashLookup, String path, List<String> children)
 		throws FileNotFoundException, IOException {
 
-System.out.println("Building "+path);
+		log.info("Building "+path);
 		String outputPath = hashLookup.get(path);
 
 		File outputFile = new File(this.outputClientFolder, outputPath);
 		if (outputFile.exists()) {
-System.out.println("Resource exists: "+outputPath);
+			log.info("- exists: "+outputPath);
 			return;
 		}
-System.out.println(" - writing to "+outputPath);
+		log.info("- writing to "+outputPath);
 
 		outputFile.getParentFile().mkdirs();
 		FileWriter writer = new FileWriter(outputFile, false);
@@ -174,15 +176,9 @@ System.out.println(" - writing to "+outputPath);
 			// concatenate children
 			final char[] buffer = new char[BUFFER_SIZE];
 			for (String child : children) {
-System.out.println(" - adding "+child);
-				File inputFile = new File(this.outputClientFolder, hashLookup.get(child));
-				if (!inputFile.exists()) {
-System.err.println("Unknown client resource: "+child);
-					// skip missing resources
-					continue;
-				}
-
 				// insert child files into outputFile
+				log.info("- adding "+child);
+				File inputFile = new File(this.outputClientFolder, hashLookup.get(child));
 				FileReader reader = new FileReader(inputFile);
 				try {
 					int count;
@@ -210,7 +206,7 @@ System.err.println("Unknown client resource: "+child);
 
 		PlaceholderGenerator generator = this.placeholders.get(this.getExtension(outputPath));
 		if (generator == null) {
-			System.err.println("Error: Cannot generate placeholder for "+outputPath);
+			log.warning("Cannot generate placeholder for "+outputPath);
 			return;
 		}
 
@@ -270,13 +266,21 @@ System.err.println("Unknown client resource: "+child);
 
 			// ensure all the client files have been compacted
 			File outputFile = new File(this.outputClientFolder, hashPath);
-			if (outputFile.exists()) {
-				continue;
+			if (!outputFile.exists()) {
+				// ensure compacted target path exists
+				compactor.compact(inputFile, outputFile);
 			}
 
-			// ensure compacted target path exists
-			outputFile.getParentFile().mkdirs();
-			compactor.compact(inputFile, outputFile);
+			if (!outputFile.exists()) {
+				// file still missing, remove
+				log.severe(path+" failed to compact");
+				hashLookup.remove(path);
+
+			} else if (outputFile.length() < 1L) {
+				// special case for files which compact to empty
+				log.warning(path+" compacted to an empty file");
+				hashLookup.remove(path);
+			}
 		}
 	}
 
@@ -323,7 +327,7 @@ System.err.println("Unknown client resource: "+child);
 				String childPath = hashLookup.get(line);
 				if (childPath == null) {
 					// TODO: allow chaining of .merge files by ordering by dependency
-					System.err.println("Missing reference: "+line);
+					log.warning("Missing merge reference: "+line);
 
 					// skip missing resources (will be reflected in hash)
 					continue;
@@ -404,4 +408,3 @@ System.err.println("Unknown client resource: "+child);
 		return files;
 	}
 }
-

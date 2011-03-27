@@ -20,6 +20,7 @@ class CSSCompactor implements Compactor {
 
 	@Override
 	public void compact(File source, File target) throws IOException {
+		target.getParentFile().mkdirs();
 		this.compiler.process(source, target);
 	}
 }

@@ -18,7 +18,7 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 		FileWriter writer = new FileWriter(target, false);
 
 		try {
-			writer.append("(function() {\n\tvar s, d=document, f=d.getElementsByTagName('script')[0];\n");
+			writer.append("(function() {\n\tvar s, d=document, f=d.getElementsByTagName('script')[0], p=f.parentNode;\n");
 
 			// concatenate references to children
 			for (String child : children) {
@@ -26,7 +26,7 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 				writer
 					.append("\ts=d.createElement('script');s.type='text/javascript';s.src='")
 					.append(child.replace("'", "\\'"))
-					.append("';f.parentNode.insertBefore(b,f);\n");
+					.append("';p.insertBefore(s,f);\n");
 			}
 
 			writer.append("})();");
