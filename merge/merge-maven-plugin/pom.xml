@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.duelengine.duel</groupId>
+		<artifactId>merge</artifactId>
+		<version>0.1.0</version>
+	</parent>
+
+	<artifactId>merge-maven-plugin</artifactId>
+	<packaging>maven-plugin</packaging>
+
+	<name>Merge Maven Plugin</name>
+	<description>Client-side resource management</description>
+	<url>http://bitbucket.org/mckamey/merge</url>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>https://bitbucket.org/mckamey/merge/src/tip/merge/LICENSE.txt</url>
+		</license>
+	</licenses>
+
+	<properties>
+		<duel.deploy.dir>file://${basedir}/../../../duel-mvn-repo</duel.deploy.dir>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.duelengine.duel</groupId>
+			<artifactId>merge-builder</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+			<version>[2.0,4.0)</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<version>[2.0,4.0)</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<version>2.5.1</version>
+				<executions>
+					<execution>
+						<id>generated-helpmojo</id>
+						<goals>
+							<goal>helpmojo</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<goalPrefix>duel</goalPrefix>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<updateReleaseInfo>true</updateReleaseInfo>
+				</configuration>
+				<goals>
+					<goal>deploy</goal>
+				</goals>
+			</plugin>
+		</plugins>
+	</build>
+
+	<distributionManagement>
+		<repository>
+			<id>mvn.duelengine.org.local</id>
+			<url>${duel.deploy.dir}</url>
+			<layout>default</layout>
+		</repository>
+	</distributionManagement>
+</project>

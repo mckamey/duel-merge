@@ -1,0 +1,9 @@
+\.DS_Store
+\.classpath
+\.project
+\.settings
+\.iml
+\.ipr
+\.iws
+merge/merge-builder/target
+merge/merge-maven-plugin/target
