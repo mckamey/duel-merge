@@ -2,6 +2,7 @@ package org.duelengine.merge;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public interface Compactor {
 
@@ -22,5 +23,5 @@ public interface Compactor {
 	 * @param source input file
 	 * @param target output file
 	 */
-	void compact(File source, File target) throws IOException;
+	void compact(Map<String, String> fileHashes, File source, File target) throws IOException;
 }

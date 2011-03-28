@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Very basic "compactor" which simply copies the bits from source to target
@@ -28,7 +29,7 @@ class NullCompactor implements Compactor {
 	}
 
 	@Override
-	public void compact(File source, File target) throws IOException {
+	public void compact(Map<String, String> fileHashes, File source, File target) throws IOException {
 		target.getParentFile().mkdirs();
 
 		FileInputStream inStream = new FileInputStream(source);

@@ -291,7 +291,7 @@ public class MergeBuilder {
 			File outputFile = new File(this.webappDir, hashPath);
 			if (!outputFile.exists()) {
 				// ensure compacted target path exists
-				compactor.compact(inputFile, outputFile);
+				compactor.compact(hashLookup, inputFile, outputFile);
 			}
 
 			if (!outputFile.exists()) {

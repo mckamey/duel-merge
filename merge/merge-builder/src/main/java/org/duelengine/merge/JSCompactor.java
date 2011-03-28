@@ -20,7 +20,7 @@ class JSCompactor implements Compactor {
 	}
 
 	@Override
-	public void compact(File source, File target) throws IOException {
+	public void compact(Map<String, String> fileHashes, File source, File target) throws IOException {
 
 		// adapted from http://blog.bolinfest.com/2009/11/calling-closure-compiler-from-java.html
 		CompilerOptions options = new CompilerOptions();
