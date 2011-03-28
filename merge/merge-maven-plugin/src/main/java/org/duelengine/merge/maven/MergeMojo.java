@@ -1,10 +1,8 @@
 package org.duelengine.merge.maven;
 
-import java.io.IOException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.project.MavenProject;
 import org.duelengine.merge.*;
 
 /**
@@ -18,58 +16,47 @@ public class MergeMojo extends AbstractMojo {
 	// http://maven.apache.org/ref/3.0.2/maven-model/maven.html#class_build
 
 	/**
-	 * The project currently being built.
+	 * Location of the webapp.
 	 * 
-	 * @parameter default-value="${project}"
-	 * @required
-	 * @readonly
+	 * @parameter default-value="${project.basedir}/src/main/webapp/"
 	 */
-	private MavenProject project;
+	private String webappDir;
 
 	/**
-	 * Location of the client-side source files.
+	 * Location of the generated CDN files.
 	 * 
-	 * @parameter default-value="${project.build.sourceDirectory}"
+	 * @parameter default-value="/cdn/"
 	 */
-	private String inputFolder;
-
-	/**
-	 * Location of the generated client-side files.
-	 * 
-	 * @parameter default-value="${project.build.sourceDirectory}/../webapp/cdn/"
-	 */
-	private String outputClientFolder;
+	private String cdnRoot;
 
 	/**
 	 * Location of the generated resources.
 	 * 
-	 * @parameter default-value="${project.build.sourceDirectory}/../resources/merge/cdn.properties"
+	 * @parameter default-value="${project.basedir}/src/main/resources/cdn.properties"
 	 */
-	private String outputResourceFile;
+	private String cdnMapFile;
 
     public void execute()
         throws MojoExecutionException {
 
 	    Log log = this.getLog();
-	    log.info("\tinputFolder="+this.inputFolder);
-	    log.info("\toutputClientFolder="+this.outputClientFolder);
-	    log.info("\toutputResourceFile="+this.outputResourceFile);
+	    log.info("\twebappDir="+this.webappDir);
+	    log.info("\tcdnRoot="+this.cdnRoot);
+	    log.info("\tcdnMapFile="+this.cdnMapFile);
 
 	    MergeBuilder merger = new MergeBuilder();
-	    merger.setInputFolder(this.inputFolder);
+	    merger.setWebAppDir(this.webappDir);
 
-	    if (this.outputClientFolder != null && !this.outputClientFolder.isEmpty()) {
-		    merger.setOutputClientFolder(this.outputClientFolder);
+	    if (this.cdnRoot != null && !this.cdnRoot.isEmpty()) {
+		    merger.setCDNRoot(this.cdnRoot);
 	    }
 
-		if (this.outputResourceFile != null && !this.outputResourceFile.isEmpty()) {
-			merger.setOutputResourceFile(this.outputResourceFile);
+		if (this.cdnMapFile != null && !this.cdnMapFile.isEmpty()) {
+			merger.setCDNMapFile(this.cdnMapFile);
 		}
 
 	    try {
 		    merger.execute();
-
-//		    this.project.addCompileSourceRoot(merger.getOutputResourceFile()); 
 
 	    } catch (Exception e) {
 		    log.error(e);
