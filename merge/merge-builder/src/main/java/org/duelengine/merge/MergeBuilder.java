@@ -52,9 +52,14 @@ public class MergeBuilder {
 	private String cdnRoot;
 	private File cdnMapFile;
 
-	public MergeBuilder() {
-		this(Arrays.asList(new JSPlaceholderGenerator(), new CSSPlaceholderGenerator()),
-			Arrays.asList(new JSCompactor(), new CSSCompactor()));
+	public MergeBuilder(String... cdnExtensions) {
+		this(Arrays.asList(
+				new JSPlaceholderGenerator(),
+				new CSSPlaceholderGenerator()),
+			Arrays.asList(
+				new NullCompactor(cdnExtensions),
+				new CSSCompactor(),
+				new JSCompactor()));
 	}
 
 	public MergeBuilder(List<PlaceholderGenerator> placeholders, List<Compactor> compactors) {
@@ -268,13 +273,17 @@ public class MergeBuilder {
 		if (compactor == null) {
 			throw new IllegalArgumentException("Error: no compactor registered for "+ext);
 		}
+		String targetExt = compactor.getTargetExtension();
+		if (targetExt == null || targetExt.indexOf('.') < 0) {
+			targetExt = ext;
+		}
 
 		final List<File> inputFiles = findFiles(this.webappDir, ext, this.cdnRoot);
 
 		for (File inputFile : inputFiles) {
 
 			// calculate and store the hash
-			String hashPath = this.cdnRoot + this.calcFileHash(inputFile) + compactor.getTargetExtension();
+			String hashPath = this.cdnRoot + this.calcFileHash(inputFile) + targetExt;
 			String path = inputFile.getCanonicalPath().substring(rootPrefix);
 			hashLookup.put(path, hashPath);
 

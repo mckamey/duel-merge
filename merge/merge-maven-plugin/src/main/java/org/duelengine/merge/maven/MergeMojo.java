@@ -1,5 +1,7 @@
 package org.duelengine.merge.maven;
 
+import java.util.Arrays;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -36,30 +38,46 @@ public class MergeMojo extends AbstractMojo {
 	 */
 	private String cdnMapFile;
 
-    public void execute()
-        throws MojoExecutionException {
+	/**
+	 * List of additional file extensions to hash and copy directly into CDN.
+	 * 
+	 * @parameter default-value=""
+	 */
+	private String cdnFiles;
 
-	    Log log = this.getLog();
-	    log.info("\twebappDir="+this.webappDir);
-	    log.info("\tcdnRoot="+this.cdnRoot);
-	    log.info("\tcdnMapFile="+this.cdnMapFile);
+	public void execute()
+		throws MojoExecutionException {
 
-	    MergeBuilder merger = new MergeBuilder();
-	    merger.setWebAppDir(this.webappDir);
+		Log log = this.getLog();
+		log.info("\twebappDir="+this.webappDir);
+		log.info("\tcdnRoot="+this.cdnRoot);
+		log.info("\tcdnMapFile="+this.cdnMapFile);
 
-	    if (this.cdnRoot != null && !this.cdnRoot.isEmpty()) {
-		    merger.setCDNRoot(this.cdnRoot);
-	    }
+		String[] exts;
+		if (this.cdnFiles != null) {
+			exts = this.cdnFiles.split("[|,\\s]+");
+		} else {
+			exts = new String[0];
+		}
+
+		log.info("\tcdnFiles="+Arrays.toString(exts));
+
+		MergeBuilder merger = new MergeBuilder(exts);
+		merger.setWebAppDir(this.webappDir);
+
+		if (this.cdnRoot != null && !this.cdnRoot.isEmpty()) {
+			merger.setCDNRoot(this.cdnRoot);
+		}
 
 		if (this.cdnMapFile != null && !this.cdnMapFile.isEmpty()) {
 			merger.setCDNMapFile(this.cdnMapFile);
 		}
 
-	    try {
-		    merger.execute();
+		try {
+			merger.execute();
 
-	    } catch (Exception e) {
-		    log.error(e);
-	    }
-    }
+		} catch (Exception e) {
+			log.error(e);
+		}
+	}
 }
