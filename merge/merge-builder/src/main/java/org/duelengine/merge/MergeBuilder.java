@@ -70,14 +70,14 @@ public class MergeBuilder {
 			throw new NullPointerException("compactors");
 		}
 
-		this.placeholders = new HashMap<String, PlaceholderGenerator>(placeholders.size());
+		this.placeholders = new LinkedHashMap<String, PlaceholderGenerator>(placeholders.size());
 		if (placeholders != null) {
 			for (PlaceholderGenerator placeholder : placeholders) {
 				this.placeholders.put(placeholder.getTargetExtension(), placeholder);
 			}
 		}
 
-		this.compactors = new HashMap<String, Compactor>(compactors.size());
+		this.compactors = new LinkedHashMap<String, Compactor>(compactors.size());
 		for (Compactor compactor : compactors) {
 			for (String ext : compactor.getSourceExtensions()) {
 				this.compactors.put(ext, compactor);
