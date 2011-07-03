@@ -10,11 +10,11 @@
 
 	<name>DUEL Merge Builder</name>
 	<description>Client-side resource management</description>
-	<url>http://bitbucket.org/mckamey/merge</url>
+	<url>http://duelengine.org</url>
 	<licenses>
 		<license>
 			<name>MIT License</name>
-			<url>https://bitbucket.org/mckamey/merge/src/tip/merge/LICENSE.txt</url>
+			<url>https://bitbucket.org/mckamey/merge/src/tip/duel-merge/LICENSE.txt</url>
 		</license>
 	</licenses>
 	<scm>
