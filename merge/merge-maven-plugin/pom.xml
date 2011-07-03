@@ -3,16 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.duelengine.duel</groupId>
-		<artifactId>merge</artifactId>
-		<version>0.1.0</version>
-	</parent>
-
+	<groupId>org.duelengine.duel</groupId>
 	<artifactId>merge-maven-plugin</artifactId>
+	<version>0.1.0</version>
 	<packaging>maven-plugin</packaging>
 
-	<name>Merge Maven Plugin</name>
+	<name>DUEL Merge Maven Plugin</name>
 	<description>Client-side resource management</description>
 	<url>http://bitbucket.org/mckamey/merge</url>
 	<licenses>
@@ -21,9 +17,20 @@
 			<url>https://bitbucket.org/mckamey/merge/src/tip/merge/LICENSE.txt</url>
 		</license>
 	</licenses>
+	<scm>
+		<url>https://bitbucket.org/mckamey/duel-merge</url>
+		<connection>scm:hg:https://bitbucket.org/mckamey/duel-merge</connection>
+		<developerConnection>scm:hg:https://bitbucket.org/mckamey/duel-merge</developerConnection>
+	</scm>
+	<developers>
+		<developer>
+			<id>mckamey</id>
+			<name>Stephen M. McKamey</name>
+			<url>http://mck.me</url>
+		</developer>
+	</developers>
 
 	<properties>
-		<duel.deploy.dir>file://${basedir}/../../../duel-mvn-repo</duel.deploy.dir>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -68,26 +75,28 @@
 					<goalPrefix>duel</goalPrefix>
 				</configuration>
 			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.6</version>
-				<configuration>
-					<updateReleaseInfo>true</updateReleaseInfo>
-				</configuration>
-				<goals>
-					<goal>deploy</goal>
-				</goals>
-			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.7.2</version>
+					<configuration>
+						<includes>
+							<!-- TODO: rename tests so they conform to **/*Test.java -->
+							<include>**/*Tests.java</include>
+						</includes>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
-
-	<distributionManagement>
-		<repository>
-			<id>mvn.duelengine.org.local</id>
-			<url>${duel.deploy.dir}</url>
-			<layout>default</layout>
-		</repository>
-	</distributionManagement>
 </project>
