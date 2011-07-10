@@ -71,6 +71,12 @@ public class MergeMojo extends AbstractMojo {
 		Log log = this.getLog();
 		log.info("\twebappDir="+this.webappDir);
 		log.info("\toutputDir="+this.outputDir);
+
+		if (this.cdnMapFile == null || this.cdnMapFile.isEmpty()) {
+			this.cdnMapFile = "/cdn.properties";
+		} else if (!this.cdnMapFile.startsWith("/")) {
+			this.cdnMapFile = '/'+this.cdnMapFile;
+		}
 		log.info("\tcdnMapFile="+this.resourcesDir+this.cdnMapFile);
 		log.info("\tcdnRoot="+this.cdnRoot);
 
@@ -89,12 +95,6 @@ public class MergeMojo extends AbstractMojo {
 
 		if (this.cdnRoot != null && !this.cdnRoot.isEmpty()) {
 			merger.setCDNRoot(this.cdnRoot);
-		}
-
-		if (this.cdnMapFile == null || this.cdnMapFile.isEmpty()) {
-			this.cdnMapFile = "/cdn.properties";
-		} else if (!this.cdnMapFile.startsWith("/")) {
-			this.cdnMapFile = '/'+this.cdnMapFile;
 		}
 
 		merger.setCDNMapFile(this.resourcesDir+this.cdnMapFile);
