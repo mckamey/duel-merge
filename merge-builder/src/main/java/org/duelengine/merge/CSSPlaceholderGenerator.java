@@ -18,10 +18,15 @@ public class CSSPlaceholderGenerator implements PlaceholderGenerator {
 		FileWriter writer = new FileWriter(target, false);
 
 		try {
+			writer.append("/* simulate semantics of merged stylesheets but allow debugging of original files */\n");
+
 			// concatenate references to children
 			for (String child : children) {
 				// insert child files into outputFile
-				writer.append("@import url(").append(child).append(");\n");
+				writer
+					.append("@import url(")
+					.append(child)
+					.append(");\n");
 			}
 
 		} finally {

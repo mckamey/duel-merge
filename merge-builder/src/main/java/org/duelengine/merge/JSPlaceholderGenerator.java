@@ -18,18 +18,36 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 		FileWriter writer = new FileWriter(target, false);
 
 		try {
-			writer.append("(function() {\n\tvar s, d=document, f=d.getElementsByTagName('script')[0], p=f.parentNode;\n");
+			writer
+				.append("(function() {\n")
+				.append("\t// simulate semantics of merged scripts but allow debugging the original files\n")
+				.append("\ttry {\n");
 
 			// concatenate references to children
 			for (String child : children) {
 				// insert child files into outputFile
 				writer
-					.append("\ts=d.createElement('script');s.type='text/javascript';s.src='")
+					.append("\t\tdocument.write('\u003cscript type=\"text/javascript\" src=\"")
+					.append(child)
+					.append("\">\u003c/script>');\n");
+			}
+
+			writer
+				.append("\t} catch(ex) {\n")
+				.append("\t\tvar s, d=document, f=d.getElementsByTagName('script')[0], p=f.parentNode;\n");
+
+			// concatenate references to children
+			for (String child : children) {
+				// insert child files into outputFile
+				writer
+					.append("\t\ts=d.createElement('script');s.type='text/javascript';s.src='")
 					.append(child.replace("'", "\\'"))
 					.append("';p.insertBefore(s,f);\n");
 			}
 
-			writer.append("})();");
+			writer
+				.append("\t}\n")
+				.append("})();");
 
 		} finally {
 			writer.flush();

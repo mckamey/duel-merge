@@ -151,7 +151,7 @@ public class MergeBuilder {
 			List<String> children = dependencyMap.get(path);
 
 			this.buildMerge(hashLookup, path, children);
-			this.buildDevPlaceholders(hashLookup, path, children);
+			this.buildDebugPlaceholders(hashLookup, path, children);
 		}
 
 		saveHashLookup(hashLookup);
@@ -197,24 +197,29 @@ public class MergeBuilder {
 		}
 	}
 
-	private void buildDevPlaceholders(final Map<String, String> hashLookup, String path, List<String> children)
+	private void buildDebugPlaceholders(final Map<String, String> hashLookup, String path, List<String> children)
 		throws FileNotFoundException, IOException {
 
 		String hashPath = hashLookup.get(path);
+		if (children.size() == 1) {
+			// if only one child then the source file is the debugPath
+			hashLookup.put(hashPath, children.get(0));
+			return;
+		}
+
+		// splice in the debug directory
 		int slash = hashPath.lastIndexOf('/');
+		String debugPath = hashPath.substring(0, slash)+"/debug"+hashPath.substring(slash);
+		hashLookup.put(hashPath, debugPath);
 
-		// insert dev dir
-		String devPath = hashPath.substring(0, slash)+"/dev"+hashPath.substring(slash);
-		hashLookup.put(hashPath, devPath);
-
-		File outputFile = new File(this.outputDir, devPath);
+		File outputFile = new File(this.outputDir, debugPath);
 		if (outputFile.exists()) {
 			return;
 		}
 
 		PlaceholderGenerator generator = this.placeholders.get(getExtension(hashPath));
 		if (generator == null) {
-			log.warning("Cannot generate placeholder for "+hashPath);
+			log.warning("Cannot generate debug placeholder for "+debugPath);
 			return;
 		}
 
