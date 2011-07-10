@@ -7,50 +7,17 @@ import java.util.logging.Logger;
 
 public class MergeBuilder {
 
-	private static final String HELP =
-		"Usage:\n" +
-		"\tjava -jar merge.jar <webapp-dir>\n" +
-		"\tjava -jar merge.jar <webapp-dir> <cdn-output-path>\n" +
-		"\tjava -jar merge.jar <webapp-dir> <cdn-output-path> <cdn-map-file>\n\n"+
-		"\twebapp-dir: file path to the root of the webapp\n"+
-		"\tcdn-output-path: webapp-relative path for the cdn output\n"+
-		"\tcdn-map-file: path to the generated resource file\n";
-
 	private static final int BUFFER_SIZE = 4096;
 	private static final String HASH_ALGORITHM = "SHA-1";
 	private static final String CHAR_ENCODING = "utf-8";
-
-	public static void main(String[] args) {
-		if (args.length < 1) {
-			System.out.println(HELP);
-			return;
-		}
-
-		MergeBuilder builder = new MergeBuilder();
-		builder.setWebAppDir(args[0]);
-
-		if (args.length > 1) {
-			builder.setCDNRoot(args[1]);
-
-			if (args.length > 2) {
-				builder.setCDNMapFile(args[2]);
-			}
-		}
-
-		try {
-			builder.execute();
-
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
-	}
 
 	private final Logger log = Logger.getLogger(MergeBuilder.class.getCanonicalName());
 	private final Map<String, Compactor> compactors;
 	private final Map<String, PlaceholderGenerator> placeholders;
 	private File webappDir;
-	private String cdnRoot;
+	private File outputDir;
 	private File cdnMapFile;
+	private String cdnRoot;
 
 	public MergeBuilder(String... cdnExtensions) {
 		this(Arrays.asList(
@@ -86,11 +53,39 @@ public class MergeBuilder {
 	}
 
 	public String getWebAppDir() {
-		return this.webappDir.getAbsolutePath();
+		try {
+			return (this.webappDir != null) ? this.webappDir.getCanonicalPath() : null;
+		} catch (IOException e) {
+			return (this.webappDir != null) ? this.webappDir.getAbsolutePath() : null;
+		}
 	}
 
 	public void setWebAppDir(String value) {
 		this.webappDir = (value != null) ? new File(value.replace('\\', '/')) : null;
+	}
+
+	public String getOutputDir() {
+		try {
+			return (this.outputDir != null) ? this.outputDir.getCanonicalPath() : null;
+		} catch (IOException e) {
+			return (this.outputDir != null) ? this.outputDir.getAbsolutePath() : null;
+		}
+	}
+
+	public void setOutputDir(String value) {
+		this.outputDir = (value != null) ? new File(value.replace('\\', '/')) : null;
+	}
+
+	public String getCDNMapFile() {
+		try {
+			return (this.cdnMapFile != null) ? this.cdnMapFile.getCanonicalPath() : null;
+		} catch (IOException e) {
+			return (this.cdnMapFile != null) ? this.cdnMapFile.getAbsolutePath() : null;
+		}
+	}
+
+	public void setCDNMapFile(String value) {
+		this.cdnMapFile = (value != null) ? new File(value.replace('\\', '/')) : null;
 	}
 
 	public String getCDNRoot() {
@@ -110,28 +105,24 @@ public class MergeBuilder {
 		this.cdnRoot = value;
 	}
 
-	public String getCDNMapFile() {
-		return this.cdnMapFile.getAbsolutePath();
+	private File getCDNDir() {
+		return new File(getOutputDir(), this.cdnRoot);
 	}
 
-	public void setCDNMapFile(String value) {
-		this.cdnMapFile = (value != null) ? new File(value.replace('\\', '/')) : null;
-	}
-
-	private boolean ensureSettings() {
+	private void ensureSettings() {
 		if (this.webappDir == null || !this.webappDir.exists()) {
-			throw new IllegalArgumentException("Error: missing webapp "+this.webappDir);
+			throw new IllegalArgumentException("ERROR: missing webappDir "+this.webappDir);
+		}
+		if (this.cdnMapFile == null) {
+			throw new IllegalArgumentException("ERROR: missing cdnMapFile");
 		}
 
 		if (this.cdnRoot == null) {
 			this.cdnRoot = "/cdn/";
 		}
-
-		if (this.cdnMapFile == null) {
-			this.cdnMapFile = new File(this.webappDir.getParentFile(), "resources/cdn.properties");
+		if (this.outputDir == null) {
+			this.outputDir = this.webappDir;
 		}
-
-		return true;
 	}
 
 	/**
@@ -140,9 +131,7 @@ public class MergeBuilder {
 	 * @throws NoSuchAlgorithmException 
 	 */
 	public void execute() throws IOException, NoSuchAlgorithmException {
-		if (!this.ensureSettings()) {
-			return;
-		}
+		this.ensureSettings();
 
 		final Map<String, String> hashLookup = new LinkedHashMap<String, String>();
 
@@ -152,7 +141,7 @@ public class MergeBuilder {
 		}
 
 		if (hashLookup.size() < 1) {
-			throw new IllegalArgumentException("Error: no input files found in "+this.webappDir);
+			throw new IllegalArgumentException("ERROR: no input files found in "+this.webappDir);
 		}
 
 		// calculate hash for all the merge files and determine dependencies
@@ -174,7 +163,7 @@ public class MergeBuilder {
 		log.info("Building "+path);
 		String outputPath = hashLookup.get(path);
 
-		File outputFile = new File(this.webappDir, outputPath);
+		File outputFile = new File(this.outputDir, outputPath);
 		if (outputFile.exists()) {
 			log.info("- exists: "+outputPath);
 			return;
@@ -190,7 +179,7 @@ public class MergeBuilder {
 			for (String child : children) {
 				// insert child files into outputFile
 				log.info("- adding "+child);
-				File inputFile = new File(this.webappDir, hashLookup.get(child));
+				File inputFile = new File(this.outputDir, hashLookup.get(child));
 				FileReader reader = new FileReader(inputFile);
 				try {
 					int count;
@@ -218,7 +207,7 @@ public class MergeBuilder {
 		String devPath = hashPath.substring(0, slash)+"/dev"+hashPath.substring(slash);
 		hashLookup.put(hashPath, devPath);
 
-		File outputFile = new File(this.webappDir, devPath);
+		File outputFile = new File(this.outputDir, devPath);
 		if (outputFile.exists()) {
 			return;
 		}
@@ -235,8 +224,8 @@ public class MergeBuilder {
 	private Map<String, List<String>> hashMergeFiles(final Map<String, String> hashLookup)
 			throws IOException, NoSuchAlgorithmException {
 
-		final int rootPrefix = this.webappDir.getCanonicalPath().length();
-		final List<File> inputFiles = findFiles(this.webappDir, ".merge", this.cdnRoot);
+		final int inputRootPrefix = this.webappDir.getCanonicalPath().length();
+		final List<File> inputFiles = findFiles(this.webappDir, this.getCDNDir(), ".merge");
 		final Map<String, List<String>> dependencyMap = new LinkedHashMap<String, List<String>>(inputFiles.size());
 
 		for (File inputFile : inputFiles) {
@@ -257,7 +246,7 @@ public class MergeBuilder {
 			}
 			hashPath += ext;
 
-			String path = inputFile.getCanonicalPath().substring(rootPrefix);
+			String path = inputFile.getCanonicalPath().substring(inputRootPrefix);
 			hashLookup.put(path, hashPath);
 			dependencyMap.put(path, children);
 		}
@@ -268,7 +257,7 @@ public class MergeBuilder {
 	private void hashClientFiles(final Map<String, String> hashLookup, String ext)
 			throws IOException, NoSuchAlgorithmException {
 
-		final int rootPrefix = this.webappDir.getCanonicalPath().length();
+		final int inputRootPrefix = this.webappDir.getCanonicalPath().length();
 		final Compactor compactor = compactors.get(ext);
 		if (compactor == null) {
 			throw new IllegalArgumentException("Error: no compactor registered for "+ext);
@@ -278,17 +267,17 @@ public class MergeBuilder {
 			targetExt = ext;
 		}
 
-		final List<File> inputFiles = findFiles(this.webappDir, ext, this.cdnRoot);
+		final List<File> inputFiles = findFiles(this.webappDir, this.getCDNDir(), ext);
 
 		for (File inputFile : inputFiles) {
 
 			// calculate and store the hash
 			String hashPath = this.cdnRoot + this.calcFileHash(inputFile) + targetExt;
-			String path = inputFile.getCanonicalPath().substring(rootPrefix);
+			String path = inputFile.getCanonicalPath().substring(inputRootPrefix);
 			hashLookup.put(path, hashPath);
 
 			// ensure all the client files have been compacted
-			File outputFile = new File(this.webappDir, hashPath);
+			File outputFile = new File(this.outputDir, hashPath);
 			if (!outputFile.exists()) {
 				// ensure compacted target path exists
 				compactor.compact(hashLookup, inputFile, outputFile);
@@ -408,20 +397,21 @@ public class MergeBuilder {
 		return path.substring(dot);
 	}
 
-	private static List<File> findFiles(File webappDir, String ext, String cdnFolder)
-			throws IOException {
+	private static List<File> findFiles(File inputDir, File outputDir, String ext)
+		throws IOException {
 
-		final String outputPath = webappDir.getCanonicalPath()+cdnFolder;
-		List<File> files = new ArrayList<File>();
-		Queue<File> folders = new LinkedList<File>();
-		folders.add(webappDir);
+		final String outputPath = outputDir.getCanonicalPath();
+		final List<File> files = new ArrayList<File>();
+		final Queue<File> folders = new LinkedList<File>();
+		folders.add(inputDir);
 
 		while (!folders.isEmpty()) {
 			File file = folders.poll();
 			if (file.getCanonicalPath().startsWith(outputPath)) {
-				// filter the output
+				// filter any output files if overlapping dirs
 				continue;
 			}
+
 			if (file.isDirectory()) {
 				folders.addAll(Arrays.asList(file.listFiles()));
 			} else if (file.getName().toLowerCase().endsWith(ext)) {
