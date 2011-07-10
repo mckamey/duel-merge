@@ -5,5 +5,5 @@
 \.iml
 \.ipr
 \.iws
-merge/merge-builder/target
-merge/merge-maven-plugin/target
+merge-builder/target
+merge-maven-plugin/target
