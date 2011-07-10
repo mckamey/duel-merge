@@ -224,13 +224,17 @@ public class MergeBuilder {
 	private Map<String, List<String>> hashMergeFiles(final Map<String, String> hashLookup)
 			throws IOException, NoSuchAlgorithmException {
 
-		final int inputRootPrefix = this.webappDir.getCanonicalPath().length();
-		final List<File> inputFiles = findFiles(this.webappDir, this.getCDNDir(), ".merge");
+		final Map<File, String> inputFiles = findFiles(".merge", this.getCDNDir(), this.webappDir, this.outputDir);
 		final Map<String, List<String>> dependencyMap = new LinkedHashMap<String, List<String>>(inputFiles.size());
 
-		for (File inputFile : inputFiles) {
+		for (File inputFile : inputFiles.keySet()) {
 			List<String> children = new ArrayList<String>();
 
+			String path = inputFiles.get(inputFile);
+			if (hashLookup.containsKey(path)) {
+				// duplicate from output
+				continue;
+			}
 			String hashPath = this.cdnRoot+calcMergeHash(inputFile, children, hashLookup);
 
 			// merge file takes the first non-empty extension
@@ -246,7 +250,6 @@ public class MergeBuilder {
 			}
 			hashPath += ext;
 
-			String path = inputFile.getCanonicalPath().substring(inputRootPrefix);
 			hashLookup.put(path, hashPath);
 			dependencyMap.put(path, children);
 		}
@@ -257,7 +260,6 @@ public class MergeBuilder {
 	private void hashClientFiles(final Map<String, String> hashLookup, String ext)
 			throws IOException, NoSuchAlgorithmException {
 
-		final int inputRootPrefix = this.webappDir.getCanonicalPath().length();
 		final Compactor compactor = compactors.get(ext);
 		if (compactor == null) {
 			throw new IllegalArgumentException("Error: no compactor registered for "+ext);
@@ -267,13 +269,17 @@ public class MergeBuilder {
 			targetExt = ext;
 		}
 
-		final List<File> inputFiles = findFiles(this.webappDir, this.getCDNDir(), ext);
+		final Map<File, String> inputFiles = findFiles(ext, this.getCDNDir(), this.webappDir, this.outputDir);
 
-		for (File inputFile : inputFiles) {
+		for (File inputFile : inputFiles.keySet()) {
 
 			// calculate and store the hash
+			String path = inputFiles.get(inputFile);
+			if (hashLookup.containsKey(path)) {
+				// duplicate from output
+				continue;
+			}
 			String hashPath = this.cdnRoot + this.calcFileHash(inputFile) + targetExt;
-			String path = inputFile.getCanonicalPath().substring(inputRootPrefix);
 			hashLookup.put(path, hashPath);
 
 			// ensure all the client files have been compacted
@@ -397,25 +403,28 @@ public class MergeBuilder {
 		return path.substring(dot);
 	}
 
-	private static List<File> findFiles(File inputDir, File outputDir, String ext)
+	private static Map<File, String> findFiles(String ext, File filterDir, File... inputDirs)
 		throws IOException {
 
-		final String outputPath = outputDir.getCanonicalPath();
-		final List<File> files = new ArrayList<File>();
+		final String filterPath = filterDir.getCanonicalPath();
+		final Map<File, String> files = new LinkedHashMap<File, String>();
 		final Queue<File> folders = new LinkedList<File>();
-		folders.add(inputDir);
+		for (File inputDir : inputDirs) {
+			int rootPrefix = inputDir.getCanonicalPath().length();
 
-		while (!folders.isEmpty()) {
-			File file = folders.poll();
-			if (file.getCanonicalPath().startsWith(outputPath)) {
-				// filter any output files if overlapping dirs
-				continue;
-			}
+			folders.add(inputDir);
+			while (!folders.isEmpty()) {
+				File file = folders.poll();
+				if (file.getCanonicalPath().startsWith(filterPath)) {
+					// filter any output files if overlapping dirs
+					continue;
+				}
 
-			if (file.isDirectory()) {
-				folders.addAll(Arrays.asList(file.listFiles()));
-			} else if (file.getName().toLowerCase().endsWith(ext)) {
-				files.add(file);
+				if (file.isDirectory()) {
+					folders.addAll(Arrays.asList(file.listFiles()));
+				} else if (file.getName().toLowerCase().endsWith(ext)) {
+					files.put(file, file.getCanonicalPath().substring(rootPrefix));
+				}
 			}
 		}
 
