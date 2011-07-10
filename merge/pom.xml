@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<groupId>org.duelengine.duel</groupId>
-	<artifactId>merge</artifactId>
-	<version>0.1.1</version>
+	<groupId>org.duelengine</groupId>
+	<artifactId>merge-root</artifactId>
+	<version>0.2.0</version>
 	<packaging>pom</packaging>
 
-	<name>DUEL Merge</name>
+	<name>DUEL Merge Root</name>
 	<description>Client-side resource management</description>
 	<url>http://duelengine.org</url>
 	<licenses>

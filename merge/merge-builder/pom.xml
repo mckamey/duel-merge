@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.duelengine.duel</groupId>
+	<groupId>org.duelengine</groupId>
 	<artifactId>merge-builder</artifactId>
-	<version>0.1.1</version>
+	<version>0.2.0</version>
 	<packaging>jar</packaging>
 
 	<name>DUEL Merge Builder</name>
@@ -37,16 +37,16 @@
 	<dependencies>
 		<!-- CSS compaction -->
 		<dependency>
-			<groupId>org.cssless.css</groupId>
+			<groupId>org.cssless</groupId>
 			<artifactId>css</artifactId>
-			<version>0.2.0</version>
+			<version>0.3.0</version>
 		</dependency>
 
 		<!-- JavaScript compaction -->
 		<dependency>
 			<groupId>com.google.javascript</groupId>
 			<artifactId>closure-compiler</artifactId>
-			<version>[r916,)</version>
+			<version>[r1043,)</version>
 		</dependency>
 
 		<dependency>
