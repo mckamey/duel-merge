@@ -11,7 +11,7 @@
 
 	<groupId>org.duelengine</groupId>
 	<artifactId>merge-builder</artifactId>
-	<version>0.2.0</version>
+	<version>0.2.1</version>
 	<packaging>jar</packaging>
 
 	<name>DUEL Merge Builder</name>
@@ -38,27 +38,32 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<cssless.version>0.3.1</cssless.version>
+		<closure.version>r1043</closure.version>
+		<junit.version>4.8.2</junit.version>
+		<jvm.version>1.6</jvm.version>
 	</properties>
 
 	<dependencies>
-		<!-- CSS compaction -->
+		<!-- CSS/LESS compaction -->
 		<dependency>
 			<groupId>org.cssless</groupId>
 			<artifactId>css</artifactId>
-			<version>0.3.0</version>
+			<version>${cssless.version}</version>
 		</dependency>
 
 		<!-- JavaScript compaction -->
 		<dependency>
 			<groupId>com.google.javascript</groupId>
 			<artifactId>closure-compiler</artifactId>
-			<version>r1043</version>
+			<version>${closure.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -84,8 +89,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>2.3.2</version>
 					<configuration>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>${jvm.version}</source>
+						<target>${jvm.version}</target>
 					</configuration>
 				</plugin>
 				<plugin>
