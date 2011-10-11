@@ -22,6 +22,7 @@ public interface Compactor {
 	 * Perform compaction
 	 * @param source input file
 	 * @param target output file
+	 * @param path URL path
 	 */
-	void compact(Map<String, String> fileHashes, File source, File target) throws IOException;
+	void compact(Map<String, String> fileHashes, File source, File target, String path) throws IOException;
 }

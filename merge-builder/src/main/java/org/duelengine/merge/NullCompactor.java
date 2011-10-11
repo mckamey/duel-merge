@@ -29,7 +29,7 @@ class NullCompactor implements Compactor {
 	}
 
 	@Override
-	public void compact(Map<String, String> fileHashes, File source, File target) throws IOException {
+	public void compact(Map<String, String> fileHashes, File source, File target, String path) throws IOException {
 		target.getParentFile().mkdirs();
 
 		FileInputStream inStream = new FileInputStream(source);

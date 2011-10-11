@@ -291,18 +291,28 @@ public class MergeBuilder {
 			File outputFile = new File(this.outputDir, hashPath);
 			if (!outputFile.exists()) {
 				// ensure compacted target path exists
-				compactor.compact(hashLookup, inputFile, outputFile);
+				compactor.compact(hashLookup, inputFile, outputFile, path);
 			}
 
 			if (!outputFile.exists()) {
 				// file still missing, remove
-				log.severe(path+" failed to compact");
+				log.severe(path+" failed to compact (output missing)");
 				hashLookup.remove(path);
 
 			} else if (outputFile.length() < 1L) {
-				// special case for files which compact to empty
-				log.warning(path+" compacted to an empty file");
-				hashLookup.remove(path);
+				if (inputFile.length() < 1L) {
+					// special case for files which compact to empty
+					log.warning(path+" is an empty file");
+
+					// remove from listings
+					hashLookup.remove(path);
+				} else {
+					// special case for files which compact to empty
+					log.warning(path+" compacted to an empty file (using original)");
+
+					// copy over original contents (as wasn't really empty)
+					new NullCompactor().compact(hashLookup, inputFile, outputFile, path);
+				}
 			}
 		}
 	}

@@ -11,7 +11,7 @@
 
 	<groupId>org.duelengine</groupId>
 	<artifactId>merge-builder</artifactId>
-	<version>0.2.1</version>
+	<version>0.3.0</version>
 	<packaging>jar</packaging>
 
 	<name>DUEL Merge Builder</name>
@@ -39,8 +39,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<cssless.version>0.3.1</cssless.version>
-		<closure.version>r1043</closure.version>
+		<cssless.version>0.3.3</cssless.version>
+		<closure.version>r1459</closure.version>
 		<junit.version>4.8.2</junit.version>
 		<jvm.version>1.6</jvm.version>
 	</properties>
