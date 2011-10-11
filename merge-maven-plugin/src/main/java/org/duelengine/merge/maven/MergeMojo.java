@@ -11,7 +11,7 @@ import org.duelengine.merge.*;
  * Generates client-side and server-side sources
  *
  * @goal merge
- * @phase process-sources
+ * @phase generate-sources
  */
 public class MergeMojo extends AbstractMojo {
 
