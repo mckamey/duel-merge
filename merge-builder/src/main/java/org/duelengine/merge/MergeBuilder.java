@@ -3,7 +3,9 @@ package org.duelengine.merge;
 import java.io.*;
 import java.security.*;
 import java.util.*;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MergeBuilder {
 
@@ -11,7 +13,7 @@ public class MergeBuilder {
 	private static final String HASH_ALGORITHM = "SHA-1";
 	private static final String CHAR_ENCODING = "utf-8";
 
-	private final Logger log = Logger.getLogger(MergeBuilder.class.getCanonicalName());
+	private final Logger log = LoggerFactory.getLogger(MergeBuilder.class);
 	private final Map<String, Compactor> compactors;
 	private final Map<String, PlaceholderGenerator> placeholders;
 	private File webappDir;
@@ -219,7 +221,7 @@ public class MergeBuilder {
 
 		PlaceholderGenerator generator = this.placeholders.get(getExtension(hashPath));
 		if (generator == null) {
-			log.warning("Cannot generate debug placeholder for "+debugPath);
+			log.warn("Cannot generate debug placeholder for "+debugPath);
 			return;
 		}
 
@@ -296,19 +298,19 @@ public class MergeBuilder {
 
 			if (!outputFile.exists()) {
 				// file still missing, remove
-				log.severe(path+" failed to compact (output missing)");
+				log.error(path+" failed to compact (output missing)");
 				hashLookup.remove(path);
 
 			} else if (outputFile.length() < 1L) {
 				if (inputFile.length() < 1L) {
 					// special case for files which compact to empty
-					log.warning(path+" is an empty file");
+					log.warn(path+" is an empty file");
 
 					// remove from listings
 					hashLookup.remove(path);
 				} else {
 					// special case for files which compact to empty
-					log.warning(path+" compacted to an empty file (using original)");
+					log.warn(path+" compacted to an empty file (using original)");
 
 					// copy over original contents (as wasn't really empty)
 					new NullCompactor().compact(hashLookup, inputFile, outputFile, path);
@@ -360,7 +362,7 @@ public class MergeBuilder {
 				String childPath = hashLookup.get(line);
 				if (childPath == null) {
 					// TODO: allow chaining of .merge files by ordering by dependency
-					log.warning("Missing merge reference: "+line);
+					log.warn("Missing merge reference: "+line);
 
 					// skip missing resources (will be reflected in hash)
 					continue;

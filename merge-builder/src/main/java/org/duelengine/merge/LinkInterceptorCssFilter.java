@@ -3,15 +3,16 @@ package org.duelengine.merge;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.cssless.css.ast.*;
 import org.cssless.css.codegen.CssFilter;
 import org.cssless.css.parsing.CssLexer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LinkInterceptorCssFilter implements CssFilter {
 
-	private final Logger log = Logger.getLogger(LinkInterceptorCssFilter.class.getCanonicalName());
+	private final Logger log = LoggerFactory.getLogger(LinkInterceptorCssFilter.class);
 	private final Map<String, String> linkMap;
 	private final URI context;
 
@@ -77,7 +78,7 @@ public class LinkInterceptorCssFilter implements CssFilter {
 
 				String valHash = this.linkMap.get(val);
 				if (valHash == null) {
-					log.warning("Missing CSS reference: "+val);
+					log.warn("Missing CSS reference: "+val);
 					break;
 				}
 
@@ -95,7 +96,7 @@ public class LinkInterceptorCssFilter implements CssFilter {
 				log.info("CSS url: "+val+" => "+valHash);
 
 			} else {
-				log.warning("Unexpected CSS url type: "+child.getNodeType());
+				log.warn("Unexpected CSS url type: "+child.getNodeType());
 			}
 		}
 		

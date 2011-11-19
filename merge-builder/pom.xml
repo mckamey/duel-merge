@@ -11,7 +11,7 @@
 
 	<groupId>org.duelengine</groupId>
 	<artifactId>merge-builder</artifactId>
-	<version>0.3.1</version>
+	<version>0.4.0</version>
 	<packaging>jar</packaging>
 
 	<name>DUEL Merge Builder</name>
@@ -41,6 +41,7 @@
 
 		<cssless.version>0.3.3</cssless.version>
 		<closure.version>r1459</closure.version>
+		<slf4j.version>1.6.4</slf4j.version>
 		<junit.version>4.8.2</junit.version>
 		<jvm.version>1.6</jvm.version>
 	</properties>
@@ -58,6 +59,19 @@
 			<groupId>com.google.javascript</groupId>
 			<artifactId>closure-compiler</artifactId>
 			<version>${closure.version}</version>
+		</dependency>
+
+		<!-- Logging API -->		
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

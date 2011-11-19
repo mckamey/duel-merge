@@ -5,7 +5,7 @@ import java.util.Arrays;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.duelengine.merge.*;
+import org.duelengine.merge.MergeBuilder;
 
 /**
  * Generates client-side and server-side sources
@@ -65,10 +65,18 @@ public class MergeMojo extends AbstractMojo {
 	 */
 	private String cdnFiles;
 
+	@Override
+	public void setLog(Log log) {
+		super.setLog(log);
+
+		MavenLoggerAdapterFactory.setMavenLogger(log);
+	};
+	
 	public void execute()
 		throws MojoExecutionException {
 		
 		Log log = this.getLog();
+
 		log.info("\twebappDir="+this.webappDir);
 		log.info("\toutputDir="+this.outputDir);
 
