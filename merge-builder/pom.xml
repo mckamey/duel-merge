@@ -110,12 +110,6 @@
 				<plugin>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.7.2</version>
-					<configuration>
-						<includes>
-							<!-- TODO: rename tests so they conform to **/*Test.java -->
-							<include>**/*Tests.java</include>
-						</includes>
-					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
