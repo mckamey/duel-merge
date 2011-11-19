@@ -21,6 +21,9 @@ public class MergeBuilder {
 	private File cdnMapFile;
 	private String cdnRoot;
 
+	/**
+	 * @param cdnExtensions extensions which will be directly copied without processing
+	 */
 	public MergeBuilder(String... cdnExtensions) {
 		this(Arrays.asList(
 				new JSPlaceholderGenerator(),
@@ -31,6 +34,10 @@ public class MergeBuilder {
 				new JSCompactor()));
 	}
 
+	/**
+	 * @param placeholders list of debug build placeholder generators
+	 * @param compactors list of all active compactors
+	 */
 	public MergeBuilder(List<PlaceholderGenerator> placeholders, List<Compactor> compactors) {
 		if (placeholders == null) {
 			throw new NullPointerException("placeholders");
@@ -40,10 +47,8 @@ public class MergeBuilder {
 		}
 
 		this.placeholders = new LinkedHashMap<String, PlaceholderGenerator>(placeholders.size());
-		if (placeholders != null) {
-			for (PlaceholderGenerator placeholder : placeholders) {
-				this.placeholders.put(placeholder.getTargetExtension(), placeholder);
-			}
+		for (PlaceholderGenerator placeholder : placeholders) {
+			this.placeholders.put(placeholder.getTargetExtension(), placeholder);
 		}
 
 		this.compactors = new LinkedHashMap<String, Compactor>(compactors.size());
@@ -128,7 +133,7 @@ public class MergeBuilder {
 	}
 
 	/**
-	 * Compiles merge files
+	 * Compiles merge files and processes resources
 	 * @throws IOException 
 	 * @throws NoSuchAlgorithmException 
 	 */
@@ -138,9 +143,7 @@ public class MergeBuilder {
 		final Map<String, String> hashLookup = new LinkedHashMap<String, String>();
 
 		// calculate hash and compact all the source files
-		for (String ext : this.compactors.keySet()) {
-			hashClientFiles(hashLookup, ext);
-		}
+		hashClientFiles(hashLookup, this.compactors.keySet());
 
 		if (hashLookup.size() < 1) {
 			throw new IllegalArgumentException("ERROR: no input files found in "+this.webappDir);
@@ -228,11 +231,11 @@ public class MergeBuilder {
 		generator.build(outputFile, children);
 	}
 
-	private Map<String, List<String>> hashMergeFiles(final Map<String, String> hashLookup)
+	private Map<String, List<String>> hashMergeFiles(Map<String, String> hashLookup)
 			throws IOException, NoSuchAlgorithmException {
 
-		final Map<File, String> inputFiles = findFiles(".merge", this.getCDNDir(), this.webappDir, this.outputDir);
-		final Map<String, List<String>> dependencyMap = new LinkedHashMap<String, List<String>>(inputFiles.size());
+		Map<File, String> inputFiles = findFiles(Collections.singleton(".merge"), this.getCDNDir(), this.webappDir, this.outputDir);
+		Map<String, List<String>> dependencyMap = new LinkedHashMap<String, List<String>>(inputFiles.size());
 
 		for (File inputFile : inputFiles.keySet()) {
 			List<String> children = new ArrayList<String>();
@@ -244,7 +247,7 @@ public class MergeBuilder {
 			}
 			String hashPath = this.cdnRoot+calcMergeHash(inputFile, children, hashLookup);
 
-			// merge file takes the first non-empty extension
+			// merge file assumes the first non-empty extension
 			String ext = null;
 			for (String child : children) {
 				ext = getExtension(child);
@@ -252,10 +255,8 @@ public class MergeBuilder {
 					break;
 				}
 			}
-			if (ext == null) {
-				ext = ".merge";
-			}
-			hashPath += ext;
+
+			hashPath += (ext == null) ? ".merge" : ext;
 
 			hashLookup.put(path, hashPath);
 			dependencyMap.put(path, children);
@@ -264,10 +265,29 @@ public class MergeBuilder {
 		return dependencyMap;
 	}
 
-	private void hashClientFiles(final Map<String, String> hashLookup, String ext)
+	private void hashClientFiles(Map<String, String> hashLookup, Set<String> extensions)
 			throws IOException, NoSuchAlgorithmException {
 
-		final Compactor compactor = compactors.get(ext);
+		Map<File, String> inputFiles = findFiles(extensions, this.getCDNDir(), this.webappDir, this.outputDir);
+
+		for (File inputFile : inputFiles.keySet()) {
+
+			// calculate and store the hash
+			String path = inputFiles.get(inputFile);
+			if (hashLookup.containsKey(path)) {
+				// already processed
+				continue;
+			}
+
+			hashClientFile(hashLookup, inputFile, path);
+		}
+	}
+
+	private void hashClientFile(Map<String, String> hashLookup, File inputFile, String path)
+			throws IOException, NoSuchAlgorithmException {
+
+		String ext = getExtension( inputFile.getCanonicalPath() );
+		Compactor compactor = compactors.get(ext);
 		if (compactor == null) {
 			throw new IllegalArgumentException("Error: no compactor registered for "+ext);
 		}
@@ -276,45 +296,33 @@ public class MergeBuilder {
 			targetExt = ext;
 		}
 
-		final Map<File, String> inputFiles = findFiles(ext, this.getCDNDir(), this.webappDir, this.outputDir);
+		// ensure the file has been compacted
+		String hashPath = this.cdnRoot + this.calcFileHash(inputFile) + targetExt;
+		File outputFile = new File(this.outputDir, hashPath);
+		if (!outputFile.exists()) {
+			// ensure compacted target path exists
+			compactor.compact(hashLookup, inputFile, outputFile, path);
+		}
+		hashLookup.put(path, hashPath);
 
-		for (File inputFile : inputFiles.keySet()) {
+		if (!outputFile.exists()) {
+			// file still missing, remove
+			log.error(path+" failed to compact (output missing)");
+			hashLookup.remove(path);
 
-			// calculate and store the hash
-			String path = inputFiles.get(inputFile);
-			if (hashLookup.containsKey(path)) {
-				// duplicate from output
-				continue;
-			}
-			String hashPath = this.cdnRoot + this.calcFileHash(inputFile) + targetExt;
-			hashLookup.put(path, hashPath);
+		} else if (outputFile.length() < 1L) {
+			if (inputFile.length() < 1L) {
+				// special case for files which compact to empty
+				log.warn(path+" is an empty file");
 
-			// ensure all the client files have been compacted
-			File outputFile = new File(this.outputDir, hashPath);
-			if (!outputFile.exists()) {
-				// ensure compacted target path exists
-				compactor.compact(hashLookup, inputFile, outputFile, path);
-			}
-
-			if (!outputFile.exists()) {
-				// file still missing, remove
-				log.error(path+" failed to compact (output missing)");
+				// remove from listings
 				hashLookup.remove(path);
+			} else {
+				// special case for files which compact to empty
+				log.warn(path+" compacted to an empty file (using original)");
 
-			} else if (outputFile.length() < 1L) {
-				if (inputFile.length() < 1L) {
-					// special case for files which compact to empty
-					log.warn(path+" is an empty file");
-
-					// remove from listings
-					hashLookup.remove(path);
-				} else {
-					// special case for files which compact to empty
-					log.warn(path+" compacted to an empty file (using original)");
-
-					// copy over original contents (as wasn't really empty)
-					new NullCompactor().compact(hashLookup, inputFile, outputFile, path);
-				}
+				// copy over original contents (as wasn't really empty)
+				new NullCompactor().compact(hashLookup, inputFile, outputFile, path);
 			}
 		}
 	}
@@ -329,15 +337,70 @@ public class MergeBuilder {
 		try {
 			// generate output
 			for (String key : hashLookup.keySet()) {
-				// http://download.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)
-				// TODO: escape any illegal chars [:=#!\s]+
-				writer.append(key).append('=').append(hashLookup.get(key)).append(newline);
+				writer.append(key).append('=').append(escapePropertyValue(hashLookup.get(key))).append(newline);
 			}
 
 		} finally {
 			writer.flush();
 			writer.close();
 		}
+	}
+
+	/**
+	 * http://download.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)
+	 * @param value
+	 * @return
+	 */
+	private CharSequence escapePropertyValue(String value) {
+
+		if (value == null) {
+			return "";
+		}
+
+		StringBuilder output = null;
+		int start = 0,
+			length = value.length();
+
+		for (int i=start; i<length; i++) {
+			char ch = value.charAt(i);
+
+			// escape any illegal chars [:=#!\s]+
+			switch (ch) {
+				case ':':
+				case '=':
+				case '#':
+				case '!':
+				case '\t':
+				case '\n':
+				case '\r':
+				case ' ':
+					if (output == null) {
+						output = new StringBuilder(length * 2);
+					}
+
+					if (i > start) {
+						// emit any leading unescaped chunk
+						output.append(value, start, i);
+					}
+					start = i+1;
+
+					// emit escape
+					output.append('\\').append(ch);
+					continue;
+			}
+		}
+
+		if (output == null) {
+			// nothing to escape, can write entire string directly
+			return value;
+		}
+
+		if (length > start) {
+			// emit any trailing unescaped chunk
+			output.append(value, start, length);
+		}
+
+		return output.toString();
 	}
 
 	private String calcMergeHash(File inputFile, List<String> children, final Map<String, String> hashLookup)
@@ -417,29 +480,35 @@ public class MergeBuilder {
 			return "";
 		}
 
-		return path.substring(dot);
+		return path.substring(dot).toLowerCase();
 	}
 
-	private static Map<File, String> findFiles(String ext, File filterDir, File... inputDirs)
+	private static Map<File, String> findFiles(Set<String> extensions, File filterDir, File... inputDirs)
 		throws IOException {
 
-		final String filterPath = filterDir.getCanonicalPath();
-		final Map<File, String> files = new LinkedHashMap<File, String>();
-		final Queue<File> folders = new LinkedList<File>();
+		String filterPath = filterDir.getCanonicalPath();
+		Queue<File> folders = new LinkedList<File>();
+		Map<File, String> files = new LinkedHashMap<File, String>();
+
 		for (File inputDir : inputDirs) {
 			int rootPrefix = inputDir.getCanonicalPath().length();
 
 			folders.add(inputDir);
 			while (!folders.isEmpty()) {
-				File file = folders.poll();
+				File file = folders.remove();
+
 				if (file.getCanonicalPath().startsWith(filterPath)) {
-					// filter any output files if overlapping dirs
+					// filter any output files if dirs overlap
 					continue;
 				}
 
 				if (file.isDirectory()) {
 					folders.addAll(Arrays.asList(file.listFiles()));
-				} else if (file.getName().toLowerCase().endsWith(ext)) {
+					continue;
+				}
+
+				String ext = getExtension(file.getCanonicalPath());
+				if (extensions.contains(ext)) {
 					files.put(file, file.getCanonicalPath().substring(rootPrefix));
 				}
 			}
