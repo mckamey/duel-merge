@@ -2,7 +2,6 @@ package org.duelengine.merge;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
 
 import org.cssless.css.ast.*;
 import org.cssless.css.codegen.CssFilter;
@@ -13,11 +12,11 @@ import org.slf4j.LoggerFactory;
 public class LinkInterceptorCssFilter implements CssFilter {
 
 	private final Logger log = LoggerFactory.getLogger(LinkInterceptorCssFilter.class);
-	private final Map<String, String> linkMap;
+	private final BuildManager manager;
 	private final URI context;
 
-	public LinkInterceptorCssFilter(Map<String, String> linkMap, URI context) {
-		this.linkMap = linkMap;
+	public LinkInterceptorCssFilter(BuildManager manager, URI context) {
+		this.manager = manager;
 		this.context = context;
 	}
 	
@@ -76,7 +75,9 @@ public class LinkInterceptorCssFilter implements CssFilter {
 					}
 				}
 
-				String valHash = this.linkMap.get(val);
+				manager.ensureProcessed(val);
+
+				String valHash = manager.getProcessedPath(val);
 				if (valHash == null) {
 					log.warn("Missing CSS reference: "+val);
 					break;

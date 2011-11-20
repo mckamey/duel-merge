@@ -1,36 +1,40 @@
 package org.duelengine.merge;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import org.cssless.css.codegen.CodeGenSettings;
-import org.cssless.css.compiler.*;
+import org.cssless.css.compiler.CssCompiler;
 
-class CSSCompactor implements Compactor {
+class CSSCompactor extends NullCompactor {
 
 	private final CssCompiler compiler = new CssCompiler();
 	private final CodeGenSettings settings = new CodeGenSettings();
 
-	@Override
-	public String[] getSourceExtensions() {
-		return new String[] { ".css", ".less" };
+	public CSSCompactor() {
+		super(".css", ".less");
 	}
 
 	@Override
-	public String getTargetExtension() {
-		return ".css";
+	public String getTargetExtension(BuildManager manager, String path) {
+		if (".less".equals(BuildManager.getExtension(path))) {
+			return ".css";
+		}
+
+		return super.getTargetExtension(manager, path);
 	}
 
 	@Override
-	public void compact(Map<String, String> fileHashes, File source, File target, String path) throws IOException {
-		target.getParentFile().mkdirs();
+	public void compact(BuildManager manager, String path, File source, File target)
+			throws IOException {
+
 		this.compiler.process(
 			source,
 			target,
 			this.settings,
-			new LinkInterceptorCssFilter(fileHashes, getContextPath(path)));
+			new LinkInterceptorCssFilter(manager, getContextPath(path)));
 	}
 
 	private URI getContextPath(String path) {

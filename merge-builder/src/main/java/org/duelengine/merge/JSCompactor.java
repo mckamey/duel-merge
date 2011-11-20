@@ -7,20 +7,15 @@ import java.util.logging.Level;
 import com.google.javascript.jscomp.*;
 import com.google.javascript.jscomp.Compiler;
 
-class JSCompactor implements Compactor {
+class JSCompactor extends NullCompactor {
 
-	@Override
-	public String[] getSourceExtensions() {
-		return new String[] { ".js" };
+	public JSCompactor() {
+		super(".js");
 	}
 
 	@Override
-	public String getTargetExtension() {
-		return ".js";
-	}
-
-	@Override
-	public void compact(Map<String, String> fileHashes, File source, File target, String path) throws IOException {
+	public void compact(BuildManager manager, String path, File source, File target)
+			throws IOException {
 
 		// adapted from http://blog.bolinfest.com/2009/11/calling-closure-compiler-from-java.html
 		CompilerOptions options = new CompilerOptions();
@@ -39,14 +34,13 @@ class JSCompactor implements Compactor {
 		// compile() returns a Result, but it is not needed here.
 		compiler.compile(externs, inputs, options);
 
-		// compiler is responsible for generating the compiled code
-		// it is not accessible via the Result
-		String result = compiler.toSource();
-
-		target.getParentFile().mkdirs();
 		FileWriter writer = new FileWriter(target, false);
 		try {
+			// compiler is responsible for generating the compiled code
+			// it is not accessible via the Result
+			String result = compiler.toSource();
 			writer.append(result);
+
 		} finally {
 			writer.flush();
 			writer.close();

@@ -5,7 +5,8 @@ import java.util.Arrays;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.duelengine.merge.MergeBuilder;
+import org.duelengine.merge.Settings;
+import org.duelengine.merge.BuildManager;
 
 /**
  * Generates client-side and server-side sources
@@ -71,47 +72,30 @@ public class MergeMojo extends AbstractMojo {
 
 		MavenLoggerAdapterFactory.setMavenLogger(log);
 	};
-	
+
 	public void execute()
 		throws MojoExecutionException {
-		
+
+		Settings settings = new Settings();
+		settings.setSourceDir(this.webappDir);
+		settings.setTargetDir(this.outputDir);
+		settings.setCDNMapFile(this.resourcesDir+this.cdnMapFile);
+		settings.setCDNRoot(this.cdnRoot);
+		settings.setExtensionList(this.cdnFiles);
+
 		Log log = this.getLog();
 
-		log.info("\twebappDir="+this.webappDir);
-		log.info("\toutputDir="+this.outputDir);
-
-		if (this.cdnMapFile == null || this.cdnMapFile.isEmpty()) {
-			this.cdnMapFile = "/cdn.properties";
-		} else if (!this.cdnMapFile.startsWith("/")) {
-			this.cdnMapFile = '/'+this.cdnMapFile;
-		}
-		log.info("\tcdnMapFile="+this.resourcesDir+this.cdnMapFile);
-		log.info("\tcdnRoot="+this.cdnRoot);
-
-		String[] exts;
-		if (this.cdnFiles != null) {
-			exts = this.cdnFiles.split("[|,\\s]+");
-		} else {
-			exts = new String[0];
-		}
-
-		log.info("\tcdnFiles="+Arrays.toString(exts));
-
-		MergeBuilder merger = new MergeBuilder(exts);
-		merger.setWebAppDir(this.webappDir);
-		merger.setOutputDir(this.outputDir);
-
-		if (this.cdnRoot != null && !this.cdnRoot.isEmpty()) {
-			merger.setCDNRoot(this.cdnRoot);
-		}
-
-		merger.setCDNMapFile(this.resourcesDir+this.cdnMapFile);
+		log.info("\tsourceDir="+settings.getSourceDir());
+		log.info("\ttargetDir="+settings.getTargetDir());
+		log.info("\tcdnMapFile="+settings.getCDNMapFile());
+		log.info("\tcdnRoot="+settings.getCDNRoot());
+		log.info("\tcdnFiles="+Arrays.toString(settings.getExtensions()));
 
 		try {
-			merger.execute();
+			new BuildManager(settings).execute();
 
-		} catch (Exception e) {
-			log.error(e);
+		} catch (Exception ex) {
+			log.error(ex);
 		}
 	}
 }
