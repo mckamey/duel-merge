@@ -137,7 +137,7 @@ class MergeCompactor implements Compactor {
 
 		if (children.size() == 1) {
 			// if only one child then use source file as the debugPath
-			manager.setProcessedPath(hashPath, children.get(0));
+			manager.setProcessedPath(hashPath, manager.getPlaceholderPath(children.get(0)));
 			return;
 		}
 
@@ -158,6 +158,6 @@ class MergeCompactor implements Compactor {
 			return;
 		}
 
-		generator.build(target, children);
+		generator.build(manager, target, children);
 	}
 }

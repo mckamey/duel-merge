@@ -84,6 +84,20 @@ public class BuildManager {
 		return hashLookup.get(path);
 	}
 
+	public String getPlaceholderPath(String path) {
+		String hashed = hashLookup.get(path);
+		if (hashed == null || hashed.isEmpty()) {
+			return path;
+		}
+
+		hashed = hashLookup.get(hashed);
+		if (hashed == null || hashed.isEmpty()) {
+			return path;
+		}
+
+		return hashed;
+	}
+
 	public void setProcessedPath(String path, String hashPath) {
 		hashLookup.put(path, hashPath);
 	}

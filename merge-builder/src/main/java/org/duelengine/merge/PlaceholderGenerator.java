@@ -13,9 +13,11 @@ public interface PlaceholderGenerator {
 	String getTargetExtension();
 
 	/**
-	 * Perform compaction
+	 * Perform build
+	 * @param manager
 	 * @param target output file
-	 * @param source input file
+	 * @param children
+	 * @throws IOException
 	 */
-	void build(File target, List<String> children) throws IOException;
+	void build(BuildManager manager, File target, List<String> children) throws IOException;
 }

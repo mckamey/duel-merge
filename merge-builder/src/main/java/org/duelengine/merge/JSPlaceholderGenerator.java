@@ -13,7 +13,7 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 	}
 
 	@Override
-	public void build(File target, List<String> children) throws IOException {
+	public void build(BuildManager manager, File target, List<String> children) throws IOException {
 		target.getParentFile().mkdirs();
 		FileWriter writer = new FileWriter(target, false);
 
@@ -25,11 +25,13 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 
 			// concatenate references to children
 			for (String child : children) {
+				child = manager.getPlaceholderPath(child);
+
 				// insert child files into outputFile
 				writer
-					.append("\t\tdocument.write('\u003cscript type=\"text/javascript\" src=\"")
+					.append("\t\tdocument.write('\\u003cscript type=\"text/javascript\" src=\"")
 					.append(child)
-					.append("\">\u003c/script>');\n");
+					.append("\">\\u003c/script>');\n");
 			}
 
 			writer
@@ -38,6 +40,8 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 
 			// concatenate references to children
 			for (String child : children) {
+				child = manager.getPlaceholderPath(child);
+
 				// insert child files into outputFile
 				writer
 					.append("\t\ts=d.createElement('script');s.type='text/javascript';s.src='")

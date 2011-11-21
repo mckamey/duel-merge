@@ -13,7 +13,7 @@ public class CSSPlaceholderGenerator implements PlaceholderGenerator {
 	}
 
 	@Override
-	public void build(File target, List<String> children) throws IOException {
+	public void build(BuildManager manager, File target, List<String> children) throws IOException {
 		target.getParentFile().mkdirs();
 		FileWriter writer = new FileWriter(target, false);
 
@@ -22,6 +22,8 @@ public class CSSPlaceholderGenerator implements PlaceholderGenerator {
 
 			// concatenate references to children
 			for (String child : children) {
+				child = manager.getPlaceholderPath(child);
+
 				// insert child files into outputFile
 				writer
 					.append("@import url(")
