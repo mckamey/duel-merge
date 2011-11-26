@@ -131,12 +131,7 @@ public class Settings {
 			return source;
 		}
 
-		source = new File(getSourceDir()+path);
-		if (source.exists()) {
-			return source;
-		}
-
-		return null;
+		return new File(getSourceDir()+path);
 	}
 
 	Map<File, String> findFiles(Set<String> extensions)

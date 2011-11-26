@@ -143,14 +143,16 @@ public class BuildManager {
 	
 			if (!isHashCalculated(path)) {
 				MessageDigest hash = MessageDigest.getInstance(HASH_ALGORITHM);
-				compactor.calcHash(this, hash, path, source);
+				if (source != null && source.exists()) {
+					compactor.calcHash(this, hash, path, source);
+				}
 				String hashPath = encodeBytes(hash.digest());
 				String targetExt = compactor.getTargetExtension(this, path);
 				setProcessedPath(path, settings.getCDNRoot()+hashPath+targetExt);
 			}
 	
 			File target = getTargetFile(path);
-			if (!target.exists()) {
+			if (!target.exists() && source.exists()) {
 				// ensure target path exists
 				target.getParentFile().mkdirs();
 	
