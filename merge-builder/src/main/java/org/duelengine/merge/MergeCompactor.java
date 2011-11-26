@@ -11,6 +11,7 @@ class MergeCompactor implements Compactor {
 
 	private static final int BUFFER_SIZE = 4096;
 	private static final String CHAR_ENCODING = "utf-8";
+	private static final String EXT = ".merge";
 	private final Logger log = LoggerFactory.getLogger(MergeCompactor.class);
 	private final Map<String, PlaceholderGenerator> placeholders;
 
@@ -27,17 +28,21 @@ class MergeCompactor implements Compactor {
 	
 	@Override
 	public String[] getSourceExtensions() {
-		return new String[] { ".merge" };
+		return new String[] { EXT };
 	}
 
 	@Override
 	public String getTargetExtension(BuildManager manager, String path) {
 		// merge file assumes the first non-empty extension
-		for (String child : manager.getDependencies(path)) {
-			String ext = BuildManager.getExtension(child);
-			if (!ext.isEmpty()) {
-				return ext;
+		for (String dependency : manager.getDependencies(path)) {
+			String ext = BuildManager.getExtension(dependency);
+			if (EXT.equalsIgnoreCase(ext)) {
+				ext = getTargetExtension(manager, dependency);
 			}
+			if (ext.isEmpty()) {
+				continue;
+			}
+			return ext;
 		}
 
 		return "";
