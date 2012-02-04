@@ -11,6 +11,7 @@ public class BuildManager {
 
 	private static final String HASH_ALGORITHM = "SHA-1";
 	private static final String NEWLINE = System.getProperty("line.separator");
+	private static final String PROPERTY_LIST_DELIM = "|";
 	private static final Logger log = LoggerFactory.getLogger(BuildManager.class);
 
 	private final Map<String, String> hashLookup = new LinkedHashMap<String, String>();
@@ -195,7 +196,9 @@ public class BuildManager {
 			children = new ArrayList<String>();
 			childLinkMap.put(path, children);
 		}
-		children.add(child);
+		if (!children.contains(child)) {
+			children.add(child);
+		}
 	}
 
 	public List<String> getChildLinks(String path) {
@@ -206,13 +209,15 @@ public class BuildManager {
 		return children;
 	}
 
-	public void addDependency(String path, String child) {
-		List<String> children = dependencyMap.get(path);
-		if (children == null) {
-			children = new ArrayList<String>();
-			dependencyMap.put(path, children);
+	public void addDependency(String path, String dependency) {
+		List<String> dependencies = dependencyMap.get(path);
+		if (dependencies == null) {
+			dependencies = new ArrayList<String>();
+			dependencyMap.put(path, dependencies);
 		}
-		children.add(child);
+		if (!dependencies.contains(dependency)) {
+			dependencies.add(dependency);
+		}
 	}
 
 	public List<String> getDependencies(String path) {
@@ -326,7 +331,6 @@ public class BuildManager {
 			throws IOException {
 
 		File cdnLinksFile = settings.getCDNLinksFile();
-
 		cdnLinksFile.getParentFile().mkdirs();
 
 		FileWriter writer = new FileWriter(cdnLinksFile, false);
@@ -342,27 +346,55 @@ public class BuildManager {
 	private void writeChildLinksMap(Appendable output)
 			throws IOException {
 
+		// propagate transitive children to dependents
+		for (String path : this.dependencyMap.keySet()) {
+			addTransitiveChildLinks(path);
+		}
+
 		// generate output
 		for (String key : childLinkMap.keySet()) {
 			List<String> children = childLinkMap.get(key);
 
 			boolean needsDelim = false;
-			StringBuilder buffer = new StringBuilder();
+			output
+				.append(key)
+				.append('=');
+
 			for (String child : children) {
 				if (needsDelim) {
-					buffer.append(NEWLINE);
+					output.append(PROPERTY_LIST_DELIM);
 				} else {
 					needsDelim = true;
 				}
-
-				buffer.append(child);
+				output.append(escapePropertyValue(child));
 			}
 
-			output
-				.append(key)
-				.append('=')
-				.append(escapePropertyValue(buffer.toString()))
-				.append(NEWLINE);
+			output.append(NEWLINE);
+		}
+	}
+
+	private void addTransitiveChildLinks(String path) {
+		if (!dependencyMap.containsKey(path)) {
+			// no dependencies so nothing to propagate
+			return;
+		}
+
+		List<String> dependencies = dependencyMap.get(path);
+		for (String dependency : dependencies) {
+			// recursively ripple links up to dependent parents
+			this.addTransitiveChildLinks(dependency);
+			if (!childLinkMap.containsKey(dependency)) {
+				// no child links so nothing to propagate
+				continue;
+			}
+
+			// add as if was a direct child of dependent parent 
+			List<String> children = childLinkMap.get(dependency);
+			for (String child : children) {
+				// propagate child link up to aggregate parent
+				this.addChildLink(path, child);
+				log.info("transitive child link: "+path+"=>"+child);
+			}
 		}
 	}
 
