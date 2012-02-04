@@ -14,8 +14,10 @@ public class Settings {
 	private static final String[] EMPTY = new String[0];
 	private static final String DEFAULT_CDN_ROOT = "/cdn/";
 	private static final String DEFAULT_MAP_FILE = "cdn.properties";
+	private static final String DEFAULT_LINKS_FILE = "cdnLinks.properties";
 
 	private File cdnMapFile;
+	private File cdnLinksFile;
 	private String cdnRoot = DEFAULT_CDN_ROOT;
 	private File targetDir;
 	private File sourceDir;
@@ -44,6 +46,27 @@ public class Settings {
 			value = '/'+value;
 		}
 		this.cdnMapFile = new File(value);
+	}
+
+	public File getCDNLinksFile() {
+		if (this.cdnLinksFile == null) {
+			return new File(this.getTargetDir(), DEFAULT_LINKS_FILE);
+		}
+
+		return this.cdnLinksFile;
+	}
+
+	public void setCDNLinksFile(String value) {
+		if (value == null || value.isEmpty()) {
+			this.cdnLinksFile = null;
+			return;
+		}
+
+		value = value.replace('\\', '/');
+		if (!value.startsWith("/")) {
+			value = '/'+value;
+		}
+		this.cdnLinksFile = new File(value);
 	}
 
 	public String getCDNRoot() {

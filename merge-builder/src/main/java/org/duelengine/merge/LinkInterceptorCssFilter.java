@@ -2,8 +2,14 @@ package org.duelengine.merge;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
-import org.cssless.css.ast.*;
+import org.cssless.css.ast.ContainerNode;
+import org.cssless.css.ast.CssNode;
+import org.cssless.css.ast.CssNodeType;
+import org.cssless.css.ast.FunctionNode;
+import org.cssless.css.ast.StringNode;
+import org.cssless.css.ast.ValueNode;
 import org.cssless.css.codegen.CssFilter;
 import org.cssless.css.parsing.CssLexer;
 import org.slf4j.Logger;
@@ -13,11 +19,11 @@ public class LinkInterceptorCssFilter implements CssFilter {
 
 	private final Logger log = LoggerFactory.getLogger(LinkInterceptorCssFilter.class);
 	private final BuildManager manager;
-	private final URI context;
+	private final String path;
 
-	public LinkInterceptorCssFilter(BuildManager manager, URI context) {
+	public LinkInterceptorCssFilter(BuildManager manager, String path) {
 		this.manager = manager;
-		this.context = context;
+		this.path = path;
 	}
 	
 	@Override
@@ -50,7 +56,7 @@ public class LinkInterceptorCssFilter implements CssFilter {
 			children.getChildren().add(new ValueNode(value));
 		}
 
-		// zero or one child here
+		// zero or one child at this point
 		for (CssNode child : children.getChildren()) {
 			if (child instanceof ValueNode) {
 				ValueNode valNode = ((ValueNode)child);
@@ -61,19 +67,24 @@ public class LinkInterceptorCssFilter implements CssFilter {
 				}
 
 				String suffix = "";
-				if (val.charAt(0) != '/' && context != null) {
-					// resolve relative URLs and isolate the path part
-					URI uri = context.resolve(val);
-					if (uri.getHost() == null && uri.getScheme() == null) {
-						val = uri.getPath();
-						if (uri.getQuery() != null) {
-							suffix += '?'+uri.getQuery();
-						}
-						if (uri.getFragment() != null) {
-							suffix += '#'+uri.getFragment();
+				if (val.charAt(0) != '/') {
+					URI context = getContextPath(path);
+					if (context != null) {
+						// resolve relative URLs and isolate the path part
+						URI uri = context.resolve(val);
+						if (uri.getHost() == null && uri.getScheme() == null) {
+							val = uri.getPath();
+							if (uri.getQuery() != null) {
+								suffix += '?'+uri.getQuery();
+							}
+							if (uri.getFragment() != null) {
+								suffix += '#'+uri.getFragment();
+							}
 						}
 					}
 				}
+
+				manager.addChildLink(this.path, val);
 
 				manager.ensureProcessed(val);
 
@@ -102,5 +113,14 @@ public class LinkInterceptorCssFilter implements CssFilter {
 		}
 		
 		return node;
+	}
+
+	private URI getContextPath(String path) {
+		try {
+			return new URI(path);
+
+		} catch (URISyntaxException ex) {
+			return null;
+		}
 	}
 }

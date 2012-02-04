@@ -55,9 +55,16 @@ public class MergeMojo extends AbstractMojo {
 	/**
 	 * File name of the generated resource map.
 	 * 
-	 * @parameter default-value="cdn.properties"
+	 * @parameter default-value="/cdn.properties"
 	 */
 	private String cdnMapFile;
+
+	/**
+	 * File name of the generated resource map.
+	 * 
+	 * @parameter default-value="/cdnLinks.properties"
+	 */
+	private String cdnLinksFile;
 
 	/**
 	 * List of additional file extensions to hash and copy directly into CDN.
@@ -76,10 +83,19 @@ public class MergeMojo extends AbstractMojo {
 	public void execute()
 		throws MojoExecutionException {
 
+		if (!this.cdnMapFile.startsWith("/")) {
+			this.cdnMapFile = '/'+this.cdnMapFile;
+		}
+
+		if (!this.cdnLinksFile.startsWith("/")) {
+			this.cdnLinksFile = '/'+this.cdnLinksFile;
+		}
+
 		Settings settings = new Settings();
 		settings.setSourceDir(this.webappDir);
 		settings.setTargetDir(this.outputDir);
 		settings.setCDNMapFile(this.resourcesDir+this.cdnMapFile);
+		settings.setCDNLinksFile(this.resourcesDir+this.cdnLinksFile);
 		settings.setCDNRoot(this.cdnRoot);
 		settings.setExtensionList(this.cdnFiles);
 
@@ -88,6 +104,7 @@ public class MergeMojo extends AbstractMojo {
 		log.info("\tsourceDir="+settings.getSourceDir());
 		log.info("\ttargetDir="+settings.getTargetDir());
 		log.info("\tcdnMapFile="+settings.getCDNMapFile());
+		log.info("\tcdnLinksFile="+settings.getCDNLinksFile());
 		log.info("\tcdnRoot="+settings.getCDNRoot());
 		log.info("\tcdnFiles="+Arrays.toString(settings.getExtensions()));
 

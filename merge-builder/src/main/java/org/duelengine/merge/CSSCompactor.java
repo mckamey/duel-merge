@@ -2,8 +2,6 @@ package org.duelengine.merge;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.cssless.css.codegen.CodeGenSettings;
 import org.cssless.css.compiler.CssCompiler;
@@ -34,15 +32,6 @@ class CSSCompactor extends NullCompactor {
 			source,
 			target,
 			this.settings,
-			new LinkInterceptorCssFilter(manager, getContextPath(path)));
-	}
-
-	private URI getContextPath(String path) {
-		try {
-			return new URI(path);
-
-		} catch (URISyntaxException ex) {
-			return null;
-		}
+			new LinkInterceptorCssFilter(manager, path));
 	}
 }

@@ -15,6 +15,7 @@ public class BuildManager {
 
 	private final Map<String, String> hashLookup = new LinkedHashMap<String, String>();
 	private final Map<String, List<String>> dependencyMap = new LinkedHashMap<String, List<String>>();
+	private final Map<String, List<String>> childLinkMap = new LinkedHashMap<String, List<String>>();
 	private final Map<String, Compactor> compactors;
 	private final Settings settings;
 	private final Stack<String> dependencyChain = new Stack<String>();
@@ -74,6 +75,7 @@ public class BuildManager {
 		}
 
 		writeCompactionMap();
+		writeChildLinksMap();
 	}
 
 	private boolean isHashCalculated(String path) {
@@ -187,6 +189,23 @@ public class BuildManager {
 		}
 	}
 
+	public void addChildLink(String path, String child) {
+		List<String> children = childLinkMap.get(path);
+		if (children == null) {
+			children = new ArrayList<String>();
+			childLinkMap.put(path, children);
+		}
+		children.add(child);
+	}
+
+	public List<String> getChildLinks(String path) {
+		List<String> children = childLinkMap.get(path);
+		if (children == null) {
+			children = Collections.emptyList();
+		}
+		return children;
+	}
+
 	public void addDependency(String path, String child) {
 		List<String> children = dependencyMap.get(path);
 		if (children == null) {
@@ -286,7 +305,7 @@ public class BuildManager {
 			writer.close();
 		}
 	}
-	
+
 	private void writeCompactionMap(Appendable output)
 			throws IOException {
 
@@ -299,6 +318,50 @@ public class BuildManager {
 				.append(key)
 				.append('=')
 				.append(value)
+				.append(NEWLINE);
+		}
+	}
+
+	private void writeChildLinksMap()
+			throws IOException {
+
+		File cdnLinksFile = settings.getCDNLinksFile();
+
+		cdnLinksFile.getParentFile().mkdirs();
+
+		FileWriter writer = new FileWriter(cdnLinksFile, false);
+		try {
+			writeChildLinksMap(writer);
+
+		} finally {
+			writer.flush();
+			writer.close();
+		}
+	}
+
+	private void writeChildLinksMap(Appendable output)
+			throws IOException {
+
+		// generate output
+		for (String key : childLinkMap.keySet()) {
+			List<String> children = childLinkMap.get(key);
+
+			boolean needsDelim = false;
+			StringBuilder buffer = new StringBuilder();
+			for (String child : children) {
+				if (needsDelim) {
+					buffer.append(NEWLINE);
+				} else {
+					needsDelim = true;
+				}
+
+				buffer.append(child);
+			}
+
+			output
+				.append(key)
+				.append('=')
+				.append(escapePropertyValue(buffer.toString()))
 				.append(NEWLINE);
 		}
 	}
