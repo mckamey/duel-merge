@@ -138,11 +138,11 @@ class MergeCompactor implements Compactor {
 		
 		String hashPath = manager.getProcessedPath(path);
 
-		List<String> children = manager.getDependencies(path);
+		List<String> dependencies = manager.getDependencies(path);
 
-		if (children.size() == 1) {
+		if (dependencies.size() == 1) {
 			// if only one child then use source file as the debugPath
-			manager.setProcessedPath(hashPath, manager.getPlaceholderPath(children.get(0)));
+			manager.setProcessedPath(hashPath, manager.getPlaceholderPath(dependencies.get(0)));
 			return;
 		}
 
@@ -150,6 +150,11 @@ class MergeCompactor implements Compactor {
 		int slash = hashPath.lastIndexOf('/');
 		String debugPath = hashPath.substring(0, slash)+"/debug"+hashPath.substring(slash);
 		manager.setProcessedPath(hashPath, debugPath);
+
+		for (String dependency : dependencies) {
+			// in debug placeholders, merge dependencies become child links
+			manager.addChildLink(debugPath, dependency);
+		}
 
 		File target = manager.getTargetFile(hashPath);
 		if (target.exists()) {
@@ -163,6 +168,6 @@ class MergeCompactor implements Compactor {
 			return;
 		}
 
-		generator.build(manager, target, children);
+		generator.build(manager, target, dependencies);
 	}
 }
