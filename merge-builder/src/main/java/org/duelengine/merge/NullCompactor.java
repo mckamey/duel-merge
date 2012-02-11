@@ -14,6 +14,7 @@ class NullCompactor implements Compactor {
 
 	private static final int BUFFER_SIZE = 4096;
 	private final String[] extensions;
+	private byte[] buffer;
 
 	public NullCompactor(String... extensions) {
 		this.extensions = (extensions != null) ? extensions : new String[0];
@@ -33,10 +34,12 @@ class NullCompactor implements Compactor {
 	public void calcHash(BuildManager manager, MessageDigest hash, String path, File source)
 			throws IOException, NoSuchAlgorithmException {
 
+		if (buffer == null) {
+			buffer = new byte[BUFFER_SIZE];
+		}
+
 		FileInputStream stream = new FileInputStream(source);
 		try {
-			final byte[] buffer = new byte[BUFFER_SIZE];
-
 			int count;
 			while ((count = stream.read(buffer)) > 0) {
 				hash.update(buffer, 0, count);
@@ -51,14 +54,16 @@ class NullCompactor implements Compactor {
 	public void compact(BuildManager manager, String path, File source, File target)
 			throws IOException {
 
+		if (buffer == null) {
+			buffer = new byte[BUFFER_SIZE];
+		}
+
 		// ensure parent path exists
 		target.getParentFile().mkdirs();
 
 		FileInputStream inStream = new FileInputStream(source);
 		FileOutputStream outStream = new FileOutputStream(target);
 		try {
-			final byte[] buffer = new byte[BUFFER_SIZE];
-
 			int count;
 			while ((count = inStream.read(buffer)) > 0) {
 				outStream.write(buffer, 0, count);
