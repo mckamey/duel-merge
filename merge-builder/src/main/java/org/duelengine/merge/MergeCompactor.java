@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 class MergeCompactor implements Compactor {
 
 	private static final int BUFFER_SIZE = 4096;
-	private static final String CHAR_ENCODING = "utf-8";
+	private static final String CHAR_ENCODING = "UTF-8";
 	private static final String EXT = ".merge";
 	private final Logger log = LoggerFactory.getLogger(MergeCompactor.class);
 	private final Map<String, PlaceholderGenerator> placeholders;
@@ -99,7 +99,7 @@ class MergeCompactor implements Compactor {
 		log.info("Building "+path);
 		String outputPath = manager.getProcessedPath(path);
 
-		if (target.exists()) {
+		if (manager.isProcessed(path) && target.exists()) {
 			log.info("- exists: "+outputPath);
 			return;
 		}
@@ -157,7 +157,7 @@ class MergeCompactor implements Compactor {
 		}
 
 		File target = manager.getTargetFile(hashPath);
-		if (target.exists()) {
+		if (manager.isProcessed(path) && target.exists()) {
 			return;
 		}
 

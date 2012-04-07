@@ -79,7 +79,7 @@ public class BuildManager {
 		writeChildLinksMap();
 	}
 
-	private boolean isHashCalculated(String path) {
+	public boolean isProcessed(String path) {
 		return hashLookup.containsKey(path);
 	}
 
@@ -111,7 +111,7 @@ public class BuildManager {
 
 	public void ensureProcessed(String path) {
 
-		if (isHashCalculated(path) && getTargetFile(path).exists()) {
+		if (isProcessed(path) && getTargetFile(path).exists()) {
 			return;
 		}
 
@@ -144,7 +144,11 @@ public class BuildManager {
 				return;
 			}
 	
-			if (!isHashCalculated(path)) {
+			File target;
+			if (isProcessed(path)) {
+				target = getTargetFile(path);
+
+			} else {
 				MessageDigest hash = MessageDigest.getInstance(HASH_ALGORITHM);
 				if (source != null && source.exists()) {
 					compactor.calcHash(this, hash, path, source);
@@ -152,17 +156,17 @@ public class BuildManager {
 				String hashPath = encodeBytes(hash.digest());
 				String targetExt = compactor.getTargetExtension(this, path);
 				setProcessedPath(path, settings.getCDNRoot()+hashPath+targetExt);
+
+				target = getTargetFile(path);
+				if (source.exists()) {
+					// ensure target path exists
+					target.getParentFile().mkdirs();
+		
+					// ensure the file has been compacted
+					compactor.compact(this, path, source, target);
+				}
 			}
-	
-			File target = getTargetFile(path);
-			if (!target.exists() && source.exists()) {
-				// ensure target path exists
-				target.getParentFile().mkdirs();
-	
-				// ensure the file has been compacted
-				compactor.compact(this, path, source, target);
-			}
-	
+
 			if (!target.exists()) {
 				// file still missing, remove
 				log.error(path+" failed to compact (output missing)");
