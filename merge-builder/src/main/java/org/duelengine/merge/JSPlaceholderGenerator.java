@@ -14,13 +14,18 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 
 	@Override
 	public void build(BuildManager manager, File target, List<String> children) throws IOException {
+		String nocache = '?'+target.getName();
+		int dot = target.getName().lastIndexOf('.');
+		if (dot > 0) {
+			nocache = nocache.substring(0, dot);
+		}
+
 		target.getParentFile().mkdirs();
 		FileWriter writer = new FileWriter(target, false);
 
 		try {
 			writer
 				.append("(function() {\n")
-				.append("\tvar nocache = '?'+new Date().getTime();\n")
 				.append("\t// simulate semantics of merged scripts but allow debugging the original files; append anti-caching suffix\n")
 				.append("\ttry {\n");
 
@@ -31,8 +36,8 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 				// insert child files into outputFile
 				writer
 					.append("\t\tdocument.write('\\u003cscript type=\"text/javascript\" src=\"")
-					.append(child.replace("'", "\\'"))
-					.append("'+nocache+'\">\\u003c/script>');\n");
+					.append(child.replace("'", "\\'")+nocache)
+					.append("\">\\u003c/script>');\n");
 			}
 
 			writer
@@ -47,7 +52,8 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 				writer
 					.append("\t\ts=d.createElement('script');s.type='text/javascript';s.src='")
 					.append(child.replace("'", "\\'"))
-					.append("'+nocache;p.insertBefore(s,f);\n");
+					.append(nocache)
+					.append("';p.insertBefore(s,f);\n");
 			}
 
 			writer

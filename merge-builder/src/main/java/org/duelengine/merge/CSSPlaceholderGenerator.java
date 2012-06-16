@@ -14,7 +14,7 @@ public class CSSPlaceholderGenerator implements PlaceholderGenerator {
 
 	@Override
 	public void build(BuildManager manager, File target, List<String> children) throws IOException {
-		String nocache = target.getName();
+		String nocache = '?'+target.getName();
 		int dot = target.getName().lastIndexOf('.');
 		if (dot > 0) {
 			nocache = nocache.substring(0, dot);
@@ -34,7 +34,6 @@ public class CSSPlaceholderGenerator implements PlaceholderGenerator {
 				writer
 					.append("@import url(")
 					.append(child)
-					.append('?')
 					.append(nocache)
 					.append(");\n");
 			}
