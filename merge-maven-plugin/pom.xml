@@ -11,7 +11,7 @@
 
 	<groupId>org.duelengine</groupId>
 	<artifactId>merge-maven-plugin</artifactId>
-	<version>0.5.3</version>
+	<version>0.5.4</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>DUEL Merge Maven Plugin</name>
@@ -40,8 +40,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<slf4j.version>1.6.4</slf4j.version>
-		<maven.version>3.0.3</maven.version>
-		<junit.version>4.8.2</junit.version>
+		<maven.version>3.0.4</maven.version>
+		<junit.version>4.9</junit.version>
 		<jvm.version>1.6</jvm.version>
 	</properties>
 
