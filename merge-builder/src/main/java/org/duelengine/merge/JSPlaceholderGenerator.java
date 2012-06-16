@@ -20,7 +20,8 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 		try {
 			writer
 				.append("(function() {\n")
-				.append("\t// simulate semantics of merged scripts but allow debugging the original files\n")
+				.append("\tvar nocache = '?'+new Date().getTime();\n")
+				.append("\t// simulate semantics of merged scripts but allow debugging the original files; append anti-caching suffix\n")
 				.append("\ttry {\n");
 
 			// concatenate references to children
@@ -30,8 +31,8 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 				// insert child files into outputFile
 				writer
 					.append("\t\tdocument.write('\\u003cscript type=\"text/javascript\" src=\"")
-					.append(child)
-					.append("\">\\u003c/script>');\n");
+					.append(child.replace("'", "\\'"))
+					.append("'+nocache+'\">\\u003c/script>');\n");
 			}
 
 			writer
@@ -46,7 +47,7 @@ public class JSPlaceholderGenerator implements PlaceholderGenerator {
 				writer
 					.append("\t\ts=d.createElement('script');s.type='text/javascript';s.src='")
 					.append(child.replace("'", "\\'"))
-					.append("';p.insertBefore(s,f);\n");
+					.append("'+nocache;p.insertBefore(s,f);\n");
 			}
 
 			writer
