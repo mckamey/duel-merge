@@ -28,8 +28,8 @@ class JSCompactor extends NullCompactor {
 
 		Compiler compiler = new Compiler();
 
-		List<JSSourceFile> externs = CommandLineRunner.getDefaultExterns();
-		List<JSSourceFile> inputs = Collections.singletonList(JSSourceFile.fromFile(source));
+		List<SourceFile> externs = CommandLineRunner.getDefaultExterns();
+		List<SourceFile> inputs = Collections.singletonList(SourceFile.fromFile(source));
 
 		// compile() returns a Result, but it is not needed here.
 		compiler.compile(externs, inputs, options);
