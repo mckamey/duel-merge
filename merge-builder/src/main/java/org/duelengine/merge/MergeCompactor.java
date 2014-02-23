@@ -52,15 +52,14 @@ class MergeCompactor implements Compactor {
 	public void calcHash(BuildManager manager, MessageDigest hash, String path, File source)
 			throws IOException, NoSuchAlgorithmException {
 
-		FileReader reader = new FileReader(source);
+		BufferedReader reader = new BufferedReader(new FileReader(source));
 		try {
-			BufferedReader lineReader = new BufferedReader(reader);
 
 			// calculate the hash for the merge file as a hash of the dependency hash paths
 			// if any of the dependencies change this hash will also
 
 			String dependency;
-			while ((dependency = lineReader.readLine()) != null) {
+			while ((dependency = reader.readLine()) != null) {
 				dependency = dependency.trim();
 				if (dependency.isEmpty() || dependency.startsWith("#")) {
 					// skip empty lines and comments

@@ -149,6 +149,16 @@ public class Settings {
 	}
 
 	File findSourceFile(String path) {
+		// query and hash
+		int query = path.indexOf('?');
+		if (query >= 0) {
+			path = path.substring(0, query);
+		}
+		int hash = path.indexOf('#');
+		if (hash >= 0) {
+			path = path.substring(0, hash);
+		}
+
 		File source = new File(getTargetDir()+path);
 		if (source.exists()) {
 			return source;

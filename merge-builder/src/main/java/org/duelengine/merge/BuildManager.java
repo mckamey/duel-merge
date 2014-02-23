@@ -1,8 +1,20 @@
 package org.duelengine.merge;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,7 +155,7 @@ public class BuildManager {
 				log.error("No compactor registered for "+sourceExt);
 				return;
 			}
-	
+
 			File target;
 			if (isProcessed(path)) {
 				target = getTargetFile(path);
@@ -233,6 +245,16 @@ public class BuildManager {
 	}
 
 	public static String getExtension(String path) {
+		// query and hash
+		int query = path.indexOf('?');
+		if (query >= 0) {
+			path = path.substring(0, query);
+		}
+		int hash = path.indexOf('#');
+		if (hash >= 0) {
+			path = path.substring(0, hash);
+		}
+
 		int dot = path.lastIndexOf('.');
 		if (dot < 0) {
 			return "";

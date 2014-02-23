@@ -11,13 +11,15 @@ import org.cssless.css.ast.FunctionNode;
 import org.cssless.css.ast.StringNode;
 import org.cssless.css.ast.ValueNode;
 import org.cssless.css.codegen.CssFilter;
+import org.cssless.css.codegen.CssFormatter;
 import org.cssless.css.parsing.CssLexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LinkInterceptorCssFilter implements CssFilter {
 
-	private final Logger log = LoggerFactory.getLogger(LinkInterceptorCssFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(LinkInterceptorCssFilter.class);
+	private static final CssFormatter cssFormatter = new CssFormatter();
 	private final BuildManager manager;
 	private final String path;
 
@@ -44,7 +46,7 @@ public class LinkInterceptorCssFilter implements CssFilter {
 			// HACK: we need a consolidated value rather than expression
 			StringBuilder buffer = new StringBuilder();
 			try {
-				new org.cssless.css.codegen.CssFormatter().writeNode(buffer, children, null);
+				cssFormatter.writeNode(buffer, children, null);
 			} catch (IOException e) {
 				return node;
 			}
@@ -81,6 +83,19 @@ public class LinkInterceptorCssFilter implements CssFilter {
 								suffix += '#'+uri.getFragment();
 							}
 						}
+					}
+
+				} else {
+					// query and hash
+					int query = val.indexOf('?');
+					if (query >= 0) {
+						suffix += val.substring(query);
+						val = val.substring(0, query);
+					}
+					int hash = val.indexOf('#');
+					if (hash >= 0) {
+						suffix += val.substring(hash);
+						val = val.substring(0, hash);
 					}
 				}
 
