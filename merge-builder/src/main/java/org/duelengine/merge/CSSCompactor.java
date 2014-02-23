@@ -3,22 +3,24 @@ package org.duelengine.merge;
 import java.io.File;
 import java.io.IOException;
 
-import org.cssless.css.codegen.CodeGenSettings;
-import org.cssless.css.compiler.CssCompiler;
+import org.duelengine.css.codegen.CodeGenSettings;
+import org.duelengine.css.compiler.CssCompiler;
 
 class CSSCompactor extends NullCompactor {
+	public static final String CSS_EXT = ".css";
+	public static final String LESS_EXT = ".less";
 
 	private final CssCompiler compiler = new CssCompiler();
 	private final CodeGenSettings settings = new CodeGenSettings();
 
 	public CSSCompactor() {
-		super(".css", ".less");
+		super(CSS_EXT, LESS_EXT);
 	}
 
 	@Override
 	public String getTargetExtension(BuildManager manager, String path) {
-		if (".less".equals(BuildManager.getExtension(path))) {
-			return ".css";
+		if (LESS_EXT.equalsIgnoreCase(BuildManager.getExtension(path))) {
+			return CSS_EXT;
 		}
 
 		return super.getTargetExtension(manager, path);

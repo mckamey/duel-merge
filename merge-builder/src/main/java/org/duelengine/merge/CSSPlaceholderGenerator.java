@@ -9,7 +9,7 @@ public class CSSPlaceholderGenerator implements PlaceholderGenerator {
 
 	@Override
 	public String getTargetExtension() {
-		return ".css";
+		return CSSCompactor.CSS_EXT;
 	}
 
 	@Override

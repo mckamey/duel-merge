@@ -4,15 +4,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.cssless.css.ast.ContainerNode;
-import org.cssless.css.ast.CssNode;
-import org.cssless.css.ast.CssNodeType;
-import org.cssless.css.ast.FunctionNode;
-import org.cssless.css.ast.StringNode;
-import org.cssless.css.ast.ValueNode;
-import org.cssless.css.codegen.CssFilter;
-import org.cssless.css.codegen.CssFormatter;
-import org.cssless.css.parsing.CssLexer;
+import org.duelengine.css.ast.ContainerNode;
+import org.duelengine.css.ast.CssNode;
+import org.duelengine.css.ast.CssNodeType;
+import org.duelengine.css.ast.FunctionNode;
+import org.duelengine.css.ast.StringNode;
+import org.duelengine.css.ast.ValueNode;
+import org.duelengine.css.codegen.CssFilter;
+import org.duelengine.css.codegen.CssFormatter;
+import org.duelengine.css.parsing.CssLexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
