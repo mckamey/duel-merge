@@ -14,13 +14,13 @@
 	<licenses>
 		<license>
 			<name>MIT License</name>
-			<url>https://bitbucket.org/mckamey/duel-merge/src/tip/duelmerge/LICENSE.txt</url>
+			<url>https://github.com/mckamey/duel/raw/master/LICENSE.txt</url>
 		</license>
 	</licenses>
 	<scm>
-		<url>https://bitbucket.org/mckamey/duel-merge</url>
-		<connection>scm:hg:https://bitbucket.org/mckamey/duel-merge</connection>
-		<developerConnection>scm:hg:https://bitbucket.org/mckamey/duel-merge</developerConnection>
+		<url>https://github.com/mckamey/duel-merge</url>
+		<connection>scm:git:https://github.com/mckamey/duel-merge</connection>
+		<developerConnection>scm:git:https://github.com/mckamey/duel-merge</developerConnection>
 	</scm>
 	<developers>
 		<developer>

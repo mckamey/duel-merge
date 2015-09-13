@@ -20,13 +20,13 @@
 	<licenses>
 		<license>
 			<name>MIT License</name>
-			<url>https://bitbucket.org/mckamey/merge/src/tip/duel-merge/LICENSE.txt</url>
+			<url>https://github.com/mckamey/duel/raw/master/LICENSE.txt</url>
 		</license>
 	</licenses>
 	<scm>
-		<url>https://bitbucket.org/mckamey/duel-merge</url>
-		<connection>scm:hg:https://bitbucket.org/mckamey/duel-merge</connection>
-		<developerConnection>scm:hg:https://bitbucket.org/mckamey/duel-merge</developerConnection>
+		<url>https://github.com/mckamey/duel-merge</url>
+		<connection>scm:git:https://github.com/mckamey/duel-merge</connection>
+		<developerConnection>scm:git:https://github.com/mckamey/duel-merge</developerConnection>
 	</scm>
 	<developers>
 		<developer>
@@ -43,7 +43,7 @@
 		<closure.version>r2180</closure.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<junit.version>4.12</junit.version>
-		<jvm.version>1.6</jvm.version>
+		<jvm.version>1.8</jvm.version>
 	</properties>
 
 	<dependencies>
